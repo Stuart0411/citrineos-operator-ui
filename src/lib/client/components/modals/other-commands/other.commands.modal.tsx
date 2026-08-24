@@ -18,10 +18,10 @@ export interface OtherCommandsModalProps {
 }
 
 export const OtherCommandsModal = ({ station }: OtherCommandsModalProps) => {
-  const parsedStation: ChargingStationDto = useMemo(
+  const parsedStation = useMemo(
     () => plainToInstance(ChargingStationClass, station),
     [station],
-  ) as ChargingStationDto;
+  ) as any;
   const [loading, setLoading] = useState<boolean>(false);
   const isModalOpen = useSelector(selectIsModalOpen);
 

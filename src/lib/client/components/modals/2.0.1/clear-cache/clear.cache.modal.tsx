@@ -24,10 +24,10 @@ export const ClearCacheModal = ({ station }: ClearCacheModalProps) => {
 
   const tenantId = useTenantId();
 
-  const parsedStation: ChargingStationDto = useMemo(
+  const parsedStation = useMemo(
     () => plainToInstance(ChargingStationClass, station),
     [station],
-  ) as ChargingStationDto;
+  ) as any;
 
   const handleSubmit = async () => {
     if (!parsedStation?.ocppConnectionName) {

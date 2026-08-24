@@ -17,6 +17,7 @@ import { AUTHORIZATIONS_LIST_QUERY } from '@lib/queries/authorizations';
 import { ResourceType } from '@lib/utils/access.types';
 import type { MessageConfirmation } from '@lib/utils/MessageConfirmation';
 import { triggerMessageAndHandleResponse } from '@lib/utils/messages.utils';
+import { getStationDisplayName } from '@lib/utils/station.names';
 import { closeModal } from '@lib/utils/store/modal.slice';
 import { useSelect } from '@refinedev/core';
 import { useForm } from '@refinedev/react-hook-form';
@@ -105,7 +106,7 @@ export const OCPP1_6_RemoteStart = ({ station }: OCPP1_6_RemoteStartProps) => {
     };
 
     triggerMessageAndHandleResponse<MessageConfirmation[]>({
-      url: `/evdriver/remoteStartTransaction?identifier=${station.ocppConnectionName}&tenantId=${tenantId}`,
+      url: `/evdriver/remoteStartTransaction?identifier=${getStationDisplayName(station as any)}&tenantId=${tenantId}`,
       data,
       ocppVersion: OCPPVersion.OCPP1_6,
       setLoading,

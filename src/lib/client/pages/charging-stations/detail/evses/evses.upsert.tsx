@@ -78,7 +78,7 @@ export const EvseUpsert: React.FC<EvseUpsertProps> = ({
 
     newItem.updatedAt = now;
     newItem.stationId = stationId;
-    newItem.ocppConnectionName = ocppConnectionName ?? evse?.ocppConnectionName;
+    newItem.ocppConnectionName = ocppConnectionName ?? (evse as any)?.ocppConnectionName;
 
     form.refineCore.onFinish(newItem).then(() => reset());
   };

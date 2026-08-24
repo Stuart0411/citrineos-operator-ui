@@ -78,10 +78,10 @@ export const GetVariablesModal = ({ station }: GetVariablesModalProps) => {
   const [variableOptionsMap, setVariableOptionsMap] = useState<
     Record<number, { label: string; value: string }[]>
   >({});
-  const parsedStation: ChargingStationDto = useMemo(
+  const parsedStation = useMemo(
     () => plainToInstance(ChargingStationClass, station),
     [station],
-  ) as ChargingStationDto;
+  ) as any;
 
   const form = useForm({
     resolver: zodResolver(GetVariablesSchema),

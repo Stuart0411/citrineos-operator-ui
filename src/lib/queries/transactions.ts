@@ -21,7 +21,6 @@ export const TRANSACTION_LIST_QUERY = gql`
       timeSpentCharging
       isActive
       chargingState
-      ocppConnectionName
       stoppedReason
       transactionId
       evseId
@@ -119,7 +118,6 @@ export const GET_TRANSACTIONS_FOR_AUTHORIZATION = gql`
       timeSpentCharging
       isActive
       chargingState
-      ocppConnectionName
       stoppedReason
       transactionId
       evseId
@@ -187,7 +185,6 @@ export const GET_TRANSACTION_LIST_FOR_STATION = gql`
       timeSpentCharging
       isActive
       chargingState
-      ocppConnectionName
       stationId
       stoppedReason
       transactionId
@@ -265,7 +262,6 @@ export const TRANSACTION_GET_QUERY = gql`
       chargingState
       stationId
       locationId
-      ocppConnectionName
       stoppedReason
       transactionId
       evseId

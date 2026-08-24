@@ -43,10 +43,10 @@ export const GetDiagnosticsModal = ({ station }: GetDiagnosticsModalProps) => {
 
   const tenantId = useTenantId();
 
-  const parsedStation: ChargingStationDto = useMemo(
+  const parsedStation = useMemo(
     () => plainToInstance(ChargingStationClass, station),
     [station],
-  ) as ChargingStationDto;
+  ) as any;
 
   const location = 'http://localhost:4566/citrineos-s3-bucket/';
 

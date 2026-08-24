@@ -13,6 +13,7 @@ import { useList, useTranslate } from '@refinedev/core';
 import { plainToInstance } from 'class-transformer';
 import { LocationMapV2 } from '@lib/client/components/map/map.v2';
 import { Skeleton } from '@lib/client/components/ui/skeleton';
+import { getStationDisplayName } from '@lib/utils/station.names';
 
 export interface LocationsMapProps {
   mapOnly?: boolean;
@@ -56,7 +57,7 @@ export const LocationsMap: React.FC<LocationsMapProps> = ({
     const filtered = allLocations.filter(
       (value) =>
         value.chargingPool?.some((station) =>
-          station.ocppConnectionName.includes(lowerCaseQuery),
+          getStationDisplayName(station).toLowerCase().includes(lowerCaseQuery),
         ) ||
         value.address?.toLowerCase().includes(lowerCaseQuery) ||
         value.name?.toLowerCase().includes(lowerCaseQuery),

@@ -17,10 +17,10 @@ export interface RemoteStartTransactionModalProps {
 export const RemoteStartTransactionModal = ({
   station,
 }: RemoteStartTransactionModalProps) => {
-  const parsedStation: ChargingStationDto = useMemo(
+  const parsedStation = useMemo(
     () => plainToInstance(ChargingStationClass, station),
     [station],
-  ) as ChargingStationDto;
+  ) as any;
 
   // Dynamically render the appropriate component based on protocol version
   const renderCommandsByProtocol = () => {

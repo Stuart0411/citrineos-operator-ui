@@ -218,7 +218,7 @@ export const TransactionDetailTabsCard = ({
               }}
             >
               <OCPPMessages
-                id={transaction.stationId}
+                id={transaction.station.pkId!}
                 initialStartDate={
                   transaction.startTime
                     ? new Date(

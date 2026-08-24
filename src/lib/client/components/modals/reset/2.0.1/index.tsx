@@ -10,6 +10,7 @@ import { SelectFormField } from '@lib/client/components/form/field';
 import { EvseSelector } from '@lib/client/components/modals/shared/evse-selector/evse.selector';
 import type { MessageConfirmation } from '@lib/utils/MessageConfirmation';
 import { triggerMessageAndHandleResponse } from '@lib/utils/messages.utils';
+import { getStationDisplayName } from '@lib/utils/station.names';
 import { closeModal } from '@lib/utils/store/modal.slice';
 import { useForm } from '@refinedev/react-hook-form';
 import React, { useState } from 'react';
@@ -57,7 +58,7 @@ export const OCPP2_0_1_Reset = ({ station }: OCPP2_0_1_ResetProps) => {
     };
 
     triggerMessageAndHandleResponse<MessageConfirmation[]>({
-      url: `/configuration/reset?identifier=${station.ocppConnectionName}&tenantId=${tenantId}`,
+      url: `/configuration/reset?identifier=${getStationDisplayName(station as any)}&tenantId=${tenantId}`,
       data,
       setLoading,
       ocppVersion: station.protocol,

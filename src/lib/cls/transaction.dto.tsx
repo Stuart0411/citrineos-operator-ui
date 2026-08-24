@@ -20,7 +20,7 @@ export class TransactionClass implements Partial<TransactionDto> {
   id?: number;
   transactionId!: string;
   ocppConnectionName!: string;
-  stationId!: number;
+  stationId!: string;
   transactionEvents?: TransactionEventDto[];
   chargingStation?: ChargingStationDto;
   evse?: EvseDto | null;

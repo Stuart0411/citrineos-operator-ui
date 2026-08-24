@@ -25,10 +25,10 @@ export const ForceDisconnectModal = ({
   const translate = useTranslate();
   const [loading, setLoading] = useState(false);
 
-  const parsedStation: ChargingStationDto = useMemo(
+  const parsedStation = useMemo(
     () => plainToInstance(ChargingStationClass, station),
     [station],
-  ) as ChargingStationDto;
+  ) as any;
 
   const onOkay = async () => {
     await triggerMessageAndHandleResponse<MessageConfirmation[]>({

@@ -96,7 +96,7 @@ export const EVSESList: React.FC<EVSESListProps> = ({ id }) => {
 
   const [expandedRowKeys, setExpandedRowKeys] = useState<React.Key[]>([]);
 
-  const handleExpandToggle = (record: EvseClass) => {
+  const handleExpandToggle = (record: { id?: number }) => {
     const evseId = record.id;
     if (evseId === undefined) return;
     const isExpanded = expandedRowKeys.includes(evseId);
@@ -142,8 +142,8 @@ export const EVSESList: React.FC<EVSESListProps> = ({ id }) => {
       return (
         <EvseUpsert
           onSubmit={handleFormSubmit}
-          stationId={station.id}
-          ocppConnectionName={station.ocppConnectionName}
+          stationId={station.pkId!}
+          ocppConnectionName={station.id}
           evse={currentEvse}
         />
       );

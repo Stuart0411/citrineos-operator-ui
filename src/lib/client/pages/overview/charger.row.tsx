@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 import { Separator } from '@radix-ui/react-menu';
 import type { ChargerStatusEnum } from '@lib/utils/enums';
+import { getStationDisplayName } from '@lib/utils/station.names';
 
 export interface ChargerRowProps {
   chargingStation: ChargingStationDetailsDto;
@@ -29,8 +30,8 @@ export const ChargerRow: React.FC<ChargerRowProps> = ({
 }) => {
   const { push } = useRouter();
   const label = evse
-    ? `${chargingStation.ocppConnectionName}:EVSE ${evse.id}`
-    : chargingStation.ocppConnectionName;
+    ? `${getStationDisplayName(chargingStation)}:EVSE ${evse.id}`
+    : getStationDisplayName(chargingStation);
 
   return (
     <div className="flex flex-col gap-4 w-full">

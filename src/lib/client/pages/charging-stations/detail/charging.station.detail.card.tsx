@@ -107,9 +107,9 @@ export const ChargingStationDetailCard = ({
     sorters: [{ field: OCPPMessageProps.timestamp, order: 'desc' }],
     filters: [
       {
-        field: OCPPMessageProps.ocppConnectionName,
+        field: OCPPMessageProps.stationId,
         operator: 'eq',
-        value: station?.ocppConnectionName,
+        value: station?.id,
       },
     ],
     pagination: {
@@ -212,7 +212,7 @@ export const ChargingStationDetailCard = ({
             }}
             className="cursor-pointer"
           />
-          <h2 className={heading2Style}>{station.ocppConnectionName}</h2>
+          <h2 className={heading2Style}>{station.id}</h2>
           <span
             className={station.isOnline ? 'text-success' : 'text-destructive'}
           >
@@ -444,7 +444,7 @@ export const ChargingStationDetailCard = ({
                 src={imageUrl}
                 unoptimized={isGcp}
                 fill={isGcp}
-                alt={`${station.ocppConnectionName} image`}
+                alt={`${station.id} image`}
                 className="w-full h-full object-contain rounded-md bg-gray-100"
                 onError={(e) => {
                   (e.currentTarget as HTMLImageElement).style.display = 'none';
@@ -465,7 +465,7 @@ export const ChargingStationDetailCard = ({
               {!station.isOnline && <CommandsUnavailableText />}
               <div className="flex gap-4 flex-wrap">
                 <ForceDisconnectButton
-                  id={station.id}
+                  id={station.pkId}
                   onClickAction={() => showForceDisconnectModal(station)}
                 />
                 {!hasActiveTransactions && (

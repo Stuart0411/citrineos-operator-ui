@@ -50,10 +50,10 @@ export const GetConfigurationModal = ({
 
   const tenantId = useTenantId();
 
-  const parsedStation: ChargingStationDto = useMemo(
+  const parsedStation = useMemo(
     () => plainToInstance(ChargingStationClass, station),
     [station],
-  ) as ChargingStationDto;
+  ) as any;
 
   const form = useForm({
     resolver: zodResolver(GetConfigurationSchema),

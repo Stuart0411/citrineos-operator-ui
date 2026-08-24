@@ -4,6 +4,7 @@
 'use client';
 
 import type { ChargingStationDto } from '@citrineos/base';
+import { getStationDisplayName } from '@lib/utils/station.names';
 import {
   OCPP1_6_COMMANDS_REGISTRY,
   type CommandDefinition,
@@ -39,7 +40,7 @@ export const OCPP1_6_Commands = ({ station }: OCPP1_6_CommandsProps) => {
     resource: ResourceType.CHARGING_STATIONS,
     action: ActionType.COMMAND,
     params: {
-      id: station.ocppConnectionName,
+      id: getStationDisplayName(station as any),
       commandType: 'otherCommands',
     },
   });
