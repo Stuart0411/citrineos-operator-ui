@@ -4,6 +4,7 @@
 'use server';
 
 import { authedAction, type ActionResult } from '@lib/utils/action-guard';
+import config from '@lib/utils/config';
 
 /*
  * Fetches a presigned URL from S3
@@ -15,6 +16,14 @@ import { generatePresignedGetUrlIfExists } from '@lib/server/clients/file/fileAc
 export const getPresignedUrlForGet = async (
   fileKey: string,
 ): Promise<ActionResult<string | null>> => {
+  if (!config.allowImageUpload) {
+    return {
+      success: true,
+      data: null,
+      error: null,
+    };
+  }
+
   return authedAction<string | null>(async (_session) => {
     if (!fileKey) {
       throw new Error('Missing file key');
