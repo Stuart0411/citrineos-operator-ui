@@ -20,7 +20,6 @@ export const getPresignedUrlForGet = async (
     return {
       success: true,
       data: null,
-      error: null,
     };
   }
 
