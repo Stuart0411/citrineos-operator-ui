@@ -45,7 +45,6 @@ export const LOCATIONS_LIST_QUERY = gql`
         }
         LatestStatusNotifications {
           id
-          ocppConnectionName
           statusNotificationId
           updatedAt
           createdAt
@@ -54,7 +53,6 @@ export const LOCATIONS_LIST_QUERY = gql`
             connectorStatus
             createdAt
             evseId
-            ocppConnectionName
             id
             timestamp
             updatedAt
@@ -127,7 +125,6 @@ export const LOCATIONS_GET_QUERY = gql`
         }
         LatestStatusNotifications {
           id
-          ocppConnectionName
           statusNotificationId
           updatedAt
           createdAt
@@ -136,7 +133,6 @@ export const LOCATIONS_GET_QUERY = gql`
             connectorStatus
             createdAt
             evseId
-            ocppConnectionName
             id
             timestamp
             updatedAt
