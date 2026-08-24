@@ -24,9 +24,6 @@ permissions:
   contents: read
   packages: write
 
-env:
-  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/citrineos-operator-ui
-
 jobs:
   build-and-push:
     name: Build And Push Image
@@ -55,6 +52,14 @@ jobs:
 
           echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
           echo "publish_latest=${LATEST}" >> "$GITHUB_OUTPUT"
+
+      - name: Set image name
+        id: image
+        shell: bash
+        run: |
+          IMAGE_NAME="ghcr.io/${GITHUB_REPOSITORY_OWNER}/citrineos-operator-ui"
+          IMAGE_NAME_LOWER="$(echo "${IMAGE_NAME}" | tr '[:upper:]' '[:lower:]')"
+          echo "image_name=${IMAGE_NAME_LOWER}" >> "$GITHUB_OUTPUT"
 
       - name: Validate build args
         shell: bash
@@ -93,7 +98,7 @@ jobs:
           file: ./Dockerfile
           platforms: linux/amd64
           push: true
-          tags: ${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.tag }}
+          tags: ${{ steps.image.outputs.image_name }}:${{ steps.tag.outputs.tag }}
           build-args: |
             NEXT_PUBLIC_API_URL=${{ vars.NEXT_PUBLIC_API_URL }}
             NEXT_PUBLIC_WS_URL=${{ vars.NEXT_PUBLIC_WS_URL }}
@@ -106,5 +111,5 @@ jobs:
         shell: bash
         run: |
           docker buildx imagetools create \
-            --tag "${IMAGE_NAME}:latest" \
-            "${IMAGE_NAME}:${{ steps.tag.outputs.tag }}"
+            --tag "${{ steps.image.outputs.image_name }}:latest" \
+            "${{ steps.image.outputs.image_name }}:${{ steps.tag.outputs.tag }}"
