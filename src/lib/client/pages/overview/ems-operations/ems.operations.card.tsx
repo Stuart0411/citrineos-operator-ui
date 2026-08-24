@@ -166,9 +166,17 @@ const formatPower = (value?: number | null) => {
   return `${value.toLocaleString()} W`;
 };
 
+const toStationId = (station: Pick<EmsStationOption, 'id'>): string | undefined => {
+  if (station.id == null) {
+    return undefined;
+  }
+
+  return String(station.id);
+};
+
 const getCommonEvses = (stations: EmsStationOption[], stationIds: string[]): EvseDto[] => {
   const selectedStations = stationIds
-    .map((stationId) => stations.find((station) => station.id === stationId))
+    .map((stationId) => stations.find((station) => toStationId(station) === stationId))
     .filter((station): station is EmsStationOption => Boolean(station));
 
   if (selectedStations.length === 0) {
@@ -330,13 +338,22 @@ export const EmsOperationsCard = ({
     : undefined;
   const stations: EmsStationOption[] = stationsData?.data ?? [];
   const selectedStations = planRequest.stationIds
-    .map((stationId) => stations.find((station) => station.id === stationId))
+    .map((stationId) => stations.find((station) => toStationId(station) === stationId))
     .filter((station): station is EmsStationOption => Boolean(station));
   const availableEvses = getCommonEvses(stations, planRequest.stationIds);
-  const stationOptions = stations.map((station) => ({
-    label: station.location?.name ? `${station.id} - ${station.location.name}` : station.id,
-    value: station.id,
-  }));
+  const stationOptions = stations
+    .map((station) => {
+      const id = toStationId(station);
+      if (!id) {
+        return null;
+      }
+
+      return {
+        label: station.location?.name ? `${id} - ${station.location.name}` : id,
+        value: id,
+      };
+    })
+    .filter((option): option is { label: string; value: string } => Boolean(option));
 
   const setPlanField = <K extends keyof EmsChargingPlanRequest>(
     key: K,
@@ -355,7 +372,7 @@ export const EmsOperationsCard = ({
       .filter(Boolean);
 
   const handleStationSelect = (stationId: string) => {
-    const station = stations.find((item) => item.id === stationId);
+    const station = stations.find((item) => toStationId(item) === stationId);
     const nextEvseId = station?.evses?.[0]?.evseTypeId;
 
     setPlanRequest((current) => ({
@@ -720,15 +737,22 @@ export const EmsOperationsCard = ({
                   {selectedStations.length > 0 ? (
                     <div className="flex flex-wrap gap-2">
                       {selectedStations.map((station) => (
-                        <Badge key={station.id} variant="secondary" className="gap-2 pr-1">
+                        <Badge key={toStationId(station) ?? 'unknown-station'} variant="secondary" className="gap-2 pr-1">
                           <span>
-                            {station.location?.name ? `${station.id} - ${station.location.name}` : station.id}
+                            {station.location?.name
+                              ? `${toStationId(station) ?? 'unknown'} - ${station.location.name}`
+                              : (toStationId(station) ?? 'unknown')}
                           </span>
                           <button
                             type="button"
-                            aria-label={`Remove ${station.id}`}
+                            aria-label={`Remove ${toStationId(station) ?? 'station'}`}
                             className="rounded-sm p-1 text-muted-foreground transition hover:bg-background/70 hover:text-foreground"
-                            onClick={() => removeStation(station.id)}
+                            onClick={() => {
+                              const id = toStationId(station);
+                              if (id) {
+                                removeStation(id);
+                              }
+                            }}
                           >
                             <X className="size-3" />
                           </button>
