@@ -6,7 +6,6 @@
 import {
   type ChargingStationDto,
   type InstalledCertificateDto,
-  InstalledCertificateProps,
 } from '@citrineos/base';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ComboboxFormField } from '@lib/client/components/form/field';
@@ -70,7 +69,7 @@ export const DeleteCertificateModal = ({
     },
     filters: [
       {
-        field: InstalledCertificateProps.stationId,
+        field: 'stationId',
         operator: 'eq',
         value: String(parsedStation?.id ?? ''),
       },
