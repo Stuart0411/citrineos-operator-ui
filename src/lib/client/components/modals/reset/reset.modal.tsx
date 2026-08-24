@@ -15,10 +15,10 @@ export interface ResetModalProps {
 }
 
 export const ResetModal = ({ station }: ResetModalProps) => {
-  const parsedStation: ChargingStationDto = useMemo(
+  const parsedStation = useMemo(
     () => plainToInstance(ChargingStationClass, station),
     [station],
-  ) as ChargingStationDto;
+  ) as any;
 
   // Dynamically render the appropriate component based on protocol version
   const renderCommandsByProtocol = () => {

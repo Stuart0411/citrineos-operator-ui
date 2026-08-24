@@ -31,6 +31,7 @@ import {
 } from '@lib/utils/store/maps.slice';
 import { getGoogleMapsApiKeyAction } from '@lib/server/actions/map/getGoogleMapsApiKeyAction';
 import { Skeleton } from '@lib/client/components/ui/skeleton';
+import { getStationDisplayName } from '@lib/utils/station.names';
 
 // https://visgl.github.io/react-google-maps/docs/api-reference/components/map#camera-control
 const zoomMax = 5;
@@ -71,7 +72,7 @@ export const LocationMap: React.FC<MapProps> = ({
 
           return {
             position,
-            identifier: station.ocppConnectionName,
+            identifier: getStationDisplayName(station),
             type: 'station' as const,
             locationId: location.id!.toString(),
             status: station.isOnline ? 'online' : ('offline' as const),

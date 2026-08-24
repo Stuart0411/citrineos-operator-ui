@@ -10,6 +10,7 @@ import { Form } from '@lib/client/components/form';
 import { SelectFormField } from '@lib/client/components/form/field';
 import type { MessageConfirmation } from '@lib/utils/MessageConfirmation';
 import { triggerMessageAndHandleResponse } from '@lib/utils/messages.utils';
+import { getStationDisplayName } from '@lib/utils/station.names';
 import { closeModal } from '@lib/utils/store/modal.slice';
 import { useForm } from '@refinedev/react-hook-form';
 import { useState } from 'react';
@@ -49,7 +50,7 @@ export const OCPP1_6_Reset = ({ station }: OCPP1_6_ResetProps) => {
     const data = { type: values.type };
 
     triggerMessageAndHandleResponse<MessageConfirmation[]>({
-      url: `/configuration/reset?identifier=${station.ocppConnectionName}&tenantId=${tenantId}`,
+      url: `/configuration/reset?identifier=${getStationDisplayName(station as any)}&tenantId=${tenantId}`,
       data,
       setLoading,
       ocppVersion: OCPPVersion.OCPP1_6,

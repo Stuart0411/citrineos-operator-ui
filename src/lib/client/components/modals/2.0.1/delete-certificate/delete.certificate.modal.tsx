@@ -45,10 +45,10 @@ export const DeleteCertificateModal = ({
 
   const tenantId = useTenantId();
 
-  const parsedStation: ChargingStationDto = useMemo(
+  const parsedStation = useMemo(
     () => plainToInstance(ChargingStationClass, station),
     [station],
-  ) as ChargingStationDto;
+  ) as any;
 
   const form = useForm({
     resolver: zodResolver(DeleteCertificateSchema),
@@ -70,9 +70,9 @@ export const DeleteCertificateModal = ({
     },
     filters: [
       {
-        field: InstalledCertificateProps.ocppConnectionName,
+        field: InstalledCertificateProps.stationId,
         operator: 'eq',
-        value: parsedStation.ocppConnectionName,
+        value: String(parsedStation?.id ?? ''),
       },
     ],
     pagination: { mode: 'off' },
@@ -95,7 +95,7 @@ export const DeleteCertificateModal = ({
 
     const certificate = JSON.parse(values.certificate);
 
-    if (parsedStation.ocppConnectionName !== certificate.ocppConnectionName) {
+    if (String(parsedStation?.id ?? '') !== String(certificate.stationId ?? '')) {
       toast.error('This certificate does not belong to this station');
       return;
     }

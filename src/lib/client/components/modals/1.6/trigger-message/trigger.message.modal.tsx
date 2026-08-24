@@ -53,10 +53,10 @@ export const TriggerMessageModal = ({ station }: TriggerMessageModalProps) => {
 
   const tenantId = useTenantId();
 
-  const parsedStation: ChargingStationDto = useMemo(
+  const parsedStation = useMemo(
     () => plainToInstance(ChargingStationClass, station),
     [station],
-  ) as ChargingStationDto;
+  ) as any;
 
   const form = useForm({
     resolver: zodResolver(TriggerMessageSchema),

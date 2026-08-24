@@ -10,6 +10,7 @@ import { type Marker, MarkerClusterer } from '@googlemaps/markerclusterer';
 import { MapMarkerV2 } from '@lib/client/components/map/map.clusters.marker';
 import { ChargingStationStatusTag } from '@lib/client/pages/charging-stations/charging.station.status.tag';
 import { MenuSection } from '@lib/client/components/main-menu/main.menu';
+import { getStationDisplayName } from '@lib/utils/station.names';
 
 /**
  * Reference: https://github.com/visgl/react-google-maps/blob/main/examples/marker-clustering/src/clustered-tree-markers.tsx
@@ -116,7 +117,7 @@ export const ClusteredLocationMarkers = ({
                         )
                       }
                     >
-                      {charger.ocppConnectionName}
+                      {getStationDisplayName(charger)}
                     </span>
                     <span
                       className={`${charger.isOnline ? 'text-success' : 'text-destructive'} text-xs`}

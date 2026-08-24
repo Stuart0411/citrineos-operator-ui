@@ -27,6 +27,7 @@ import { CHARGING_STATION_SEQUENCES_GET_QUERY } from '@lib/queries/charging.stat
 import { ResourceType } from '@lib/utils/access.types';
 import type { MessageConfirmation } from '@lib/utils/MessageConfirmation';
 import { triggerMessageAndHandleResponse } from '@lib/utils/messages.utils';
+import { getStationDisplayName } from '@lib/utils/station.names';
 import { closeModal } from '@lib/utils/store/modal.slice';
 import { useCustom, useSelect } from '@refinedev/core';
 import { useForm } from '@refinedev/react-hook-form';
@@ -159,7 +160,7 @@ export const OCPP2_0_1_RemoteStart = ({
     };
 
     triggerMessageAndHandleResponse<MessageConfirmation[]>({
-      url: `/evdriver/requestStartTransaction?identifier=${station.ocppConnectionName}&tenantId=${tenantId}`,
+      url: `/evdriver/requestStartTransaction?identifier=${getStationDisplayName(station as any)}&tenantId=${tenantId}`,
       data,
       setLoading,
       ocppVersion: station.protocol,

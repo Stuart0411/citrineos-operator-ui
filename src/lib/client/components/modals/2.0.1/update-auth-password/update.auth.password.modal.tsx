@@ -39,10 +39,10 @@ export const UpdateAuthPasswordModal = ({
   const dispatch = useDispatch();
   const [loading, setLoading] = useState<boolean>(false);
 
-  const parsedStation: ChargingStationDto = useMemo(
+  const parsedStation = useMemo(
     () => plainToInstance(ChargingStationClass, station),
     [station],
-  ) as ChargingStationDto;
+  ) as any;
 
   const form = useForm({
     resolver: zodResolver(UpdateAuthPasswordSchema),

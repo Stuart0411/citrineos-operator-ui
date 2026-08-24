@@ -20,6 +20,7 @@ import { clickableLinkStyle, heading2Style } from '@lib/client/styles/page';
 import { overviewClickableStyle } from '@lib/client/styles/card';
 import { Skeleton } from '@lib/client/components/ui/skeleton';
 import { AccessDeniedFallbackCard } from '@lib/client/components/access-denied-fallback-card';
+import { getTransactionStationDisplayName } from '@lib/utils/station.names';
 
 export const ActiveTransactionsCard = () => {
   const { push } = useRouter();
@@ -145,7 +146,9 @@ export const ActiveTransactionsCard = () => {
                         </span>
                       </div>
 
-                      <div>Station: {transaction.ocppConnectionName}</div>
+                      <div>
+                        Station: {getTransactionStationDisplayName(transaction)}
+                      </div>
                       <div>Total kWh: {transaction.totalKwh?.toFixed(2)}</div>
                       <div>Total Time: {transaction.timeSpentCharging}</div>
                       <div>Status: {transaction.chargingState}</div>

@@ -13,6 +13,7 @@ import { ChargerRow } from '@lib/client/pages/overview/charger.row';
 import type { ChargerStatusEnum } from '@lib/utils/enums';
 import { ScrollArea } from '@ferdiunal/refine-shadcn/ui';
 import { useTranslate } from '@refinedev/core';
+import { getStationDisplayName } from '@lib/utils/station.names';
 
 export const ChargerActivityStationsSheet = ({
   open,
@@ -40,7 +41,7 @@ export const ChargerActivityStationsSheet = ({
             {chargers.length > 0 ? (
               chargers.map((item, index) => (
                 <ChargerRow
-                  key={`${item.station.ocppConnectionName}-${item.evse.connectors?.[0]?.id}`}
+                  key={`${getStationDisplayName(item.station)}-${item.evse.connectors?.[0]?.id}`}
                   chargingStation={item.station}
                   evse={item.evse}
                   lastStatus={item.lastStatus}

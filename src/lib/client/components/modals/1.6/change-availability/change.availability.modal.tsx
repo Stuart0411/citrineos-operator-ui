@@ -16,6 +16,7 @@ import { ResourceType } from '@lib/utils/access.types';
 import type { MessageConfirmation } from '@lib/utils/MessageConfirmation';
 import { triggerMessageAndHandleResponse } from '@lib/utils/messages.utils';
 import { closeModal } from '@lib/utils/store/modal.slice';
+import { getStationDisplayName } from '@lib/utils/station.names';
 import { useSelect } from '@refinedev/core';
 import { useForm } from '@refinedev/react-hook-form';
 import { plainToInstance } from 'class-transformer';
@@ -53,9 +54,9 @@ export const ChangeAvailabilityModal = ({
   const tenantId = useTenantId();
 
   const parsedStation: ChargingStationDto = useMemo(
-    () => plainToInstance(ChargingStationClass, station),
+    () => plainToInstance(ChargingStationClass, station) as unknown as ChargingStationDto,
     [station],
-  ) as ChargingStationDto;
+  );
 
   const form = useForm({
     resolver: zodResolver(ChangeAvailabilitySchema),
@@ -100,7 +101,7 @@ export const ChangeAvailabilityModal = ({
     };
 
     await triggerMessageAndHandleResponse<MessageConfirmation[]>({
-      url: `/configuration/changeAvailability?identifier=${parsedStation.ocppConnectionName}&tenantId=${tenantId}`,
+      url: `/configuration/changeAvailability?identifier=${getStationDisplayName(parsedStation as unknown as { id?: number | string | null; ocppConnectionName?: string | null })}&tenantId=${tenantId}`,
       data,
       setLoading,
       ocppVersion: OCPPVersion.OCPP1_6,

@@ -10,6 +10,7 @@ import { ComboboxFormField } from '@lib/client/components/form/field';
 import type { ChargingStationWithTransactionsDto } from '@lib/client/components/modals/remote-stop/remote.stop.modal';
 import type { MessageConfirmation } from '@lib/utils/MessageConfirmation';
 import { triggerMessageAndHandleResponse } from '@lib/utils/messages.utils';
+import { getStationDisplayName } from '@lib/utils/station.names';
 import { closeModal } from '@lib/utils/store/modal.slice';
 import { useForm } from '@refinedev/react-hook-form';
 import { useEffect, useMemo, useState } from 'react';
@@ -54,7 +55,7 @@ export const OCPP2_0_1_RemoteStop = ({
     const data = { transactionId: values.transactionId };
 
     triggerMessageAndHandleResponse<MessageConfirmation[]>({
-      url: `/evdriver/requestStopTransaction?identifier=${station.ocppConnectionName}&tenantId=${tenantId}`,
+      url: `/evdriver/requestStopTransaction?identifier=${getStationDisplayName(station)}&tenantId=${tenantId}`,
       data,
       ocppVersion: station.protocol,
       setLoading,

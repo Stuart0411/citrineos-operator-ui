@@ -21,6 +21,7 @@ import { cardHeaderFlex } from '@lib/client/styles/card';
 import { KeyValueDisplay } from '@lib/client/components/key-value-display';
 import { useFieldArray } from 'react-hook-form';
 import { RemoveArrayItemButton } from '@lib/client/components/form/remove-array-item-button';
+import { getStationDisplayName } from '@lib/utils/station.names';
 
 type FormInstance = any;
 
@@ -53,7 +54,7 @@ export const SelectedChargingStations = ({
 
   const { options, onSearch, query } = useSelect({
     resource: ResourceType.CHARGING_STATIONS,
-    optionLabel: 'id',
+    optionLabel: (station) => getStationDisplayName(station),
     optionValue: (station) => JSON.stringify(station),
     meta: {
       gqlQuery: CHARGING_STATIONS_LIST_QUERY,
@@ -128,7 +129,7 @@ export const SelectedChargingStations = ({
                   >
                     <KeyValueDisplay
                       keyLabel="Station ID"
-                      value={station.ocppConnectionName}
+                      value={getStationDisplayName(station)}
                     />
                     <KeyValueDisplay
                       keyLabel="Status"

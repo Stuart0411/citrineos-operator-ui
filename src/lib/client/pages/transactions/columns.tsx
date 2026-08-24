@@ -60,7 +60,7 @@ export const transactionsColumns: ColumnConfiguration[] = [
     cellRender: ({ row }: CellContext<TransactionClass, unknown>) => (
       <TableCellLink
         path={`/${MenuSection.CHARGING_STATIONS}/${row.original.chargingStation?.id}`}
-        value={row.original.chargingStation?.ocppConnectionName ?? EMPTY_VALUE}
+        value={row.original.chargingStation?.id ?? EMPTY_VALUE}
       />
     ),
   },
@@ -198,7 +198,7 @@ export const getTransactionsFilters = (value: string): CrudFilters => {
           value,
         },
         {
-          field: TransactionProps.ocppConnectionName,
+          field: 'stationId',
           operator: 'contains',
           value,
         },

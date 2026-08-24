@@ -51,10 +51,10 @@ export const GetLogsModal = ({ station }: GetLogsModalProps) => {
 
   const tenantId = useTenantId();
 
-  const parsedStation: ChargingStationDto = useMemo(
+  const parsedStation = useMemo(
     () => plainToInstance(ChargingStationClass, station),
     [station],
-  ) as ChargingStationDto;
+  ) as any;
 
   const remoteLocation = 'http://localhost:4566/citrineos-s3-bucket/';
 
