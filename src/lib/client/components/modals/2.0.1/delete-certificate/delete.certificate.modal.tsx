@@ -94,7 +94,9 @@ export const DeleteCertificateModal = ({
 
     const certificate = JSON.parse(values.certificate);
 
-    if (String(parsedStation?.id ?? '') !== String(certificate.stationId ?? '')) {
+    if (
+      String(parsedStation?.id ?? '') !== String(certificate.stationId ?? '')
+    ) {
       toast.error('This certificate does not belong to this station');
       return;
     }
