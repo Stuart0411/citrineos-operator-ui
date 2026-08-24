@@ -56,6 +56,15 @@ Copy-Item .\deploy\ui.runtime.env.example .\deploy\ui.runtime.env
 
 2. Edit `deploy/ui.runtime.env` with real values (`NEXTAUTH_SECRET`, `HASURA_ADMIN_SECRET`, etc.).
 
+	Ensure these endpoint values are set in `deploy/ui.runtime.env`:
+
+	- `NEXT_PUBLIC_API_URL`
+	- `NEXT_PUBLIC_WS_URL`
+	- `NEXT_PUBLIC_CITRINE_CORE_URL`
+	- `NEXT_PUBLIC_FILE_SERVER_URL`
+
+	If omitted, the UI may fall back to localhost endpoints and fail to connect from remote clients.
+
 3. Sign in to your container registry.
 
 ```powershell
