@@ -142,8 +142,8 @@ export const EVSESList: React.FC<EVSESListProps> = ({ id }) => {
       return (
         <EvseUpsert
           onSubmit={handleFormSubmit}
-          stationId={station.pkId!}
-          ocppConnectionName={station.id}
+          stationId={(station as any).pkId!}
+          ocppConnectionName={String(station.id)}
           evse={currentEvse}
         />
       );

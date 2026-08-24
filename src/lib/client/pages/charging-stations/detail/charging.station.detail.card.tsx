@@ -465,7 +465,7 @@ export const ChargingStationDetailCard = ({
               {!station.isOnline && <CommandsUnavailableText />}
               <div className="flex gap-4 flex-wrap">
                 <ForceDisconnectButton
-                  id={station.pkId}
+                  id={(station as any).pkId}
                   onClickAction={() => showForceDisconnectModal(station)}
                 />
                 {!hasActiveTransactions && (

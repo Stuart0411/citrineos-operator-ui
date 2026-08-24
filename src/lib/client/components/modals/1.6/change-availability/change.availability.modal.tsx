@@ -54,7 +54,11 @@ export const ChangeAvailabilityModal = ({
   const tenantId = useTenantId();
 
   const parsedStation: ChargingStationDto = useMemo(
-    () => plainToInstance(ChargingStationClass, station) as unknown as ChargingStationDto,
+    () =>
+      plainToInstance(
+        ChargingStationClass,
+        station,
+      ) as unknown as ChargingStationDto,
     [station],
   );
 

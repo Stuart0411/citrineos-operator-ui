@@ -177,7 +177,7 @@ export const LocationsUpsert = ({
   useEffect(() => {
     if (!originalStationIdsRef.current && currentChargingPool !== undefined) {
       originalStationIdsRef.current = currentChargingPool
-        ? currentChargingPool.map((charger) => charger.id!)
+        ? currentChargingPool.map((charger) => String(charger.id!))
         : [];
     }
   }, [currentChargingPool]);
@@ -195,7 +195,7 @@ export const LocationsUpsert = ({
   const processChargingPoolChanges = (locationId: string) => {
     const prevStationIds = new Set(originalStationIdsRef.current);
     const currentStationIds = new Set(
-      (currentChargingPool || []).map((charger) => charger.id!),
+      (currentChargingPool || []).map((charger) => String(charger.id!)),
     );
 
     const addedIds = [...currentStationIds].filter(
