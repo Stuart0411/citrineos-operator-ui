@@ -15,6 +15,7 @@ import {
   Home,
   MapPin,
   Receipt,
+  SlidersHorizontal,
   Users,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -28,6 +29,7 @@ import { useTranslate } from '@refinedev/core';
 
 export enum MenuSection {
   OVERVIEW = 'overview',
+  EMS_PLAN_BUILDER = 'ems-plan-builder',
   LOCATIONS = 'locations',
   CHARGING_STATIONS = 'charging-stations',
   AUTHORIZATIONS = 'authorizations',
@@ -67,6 +69,11 @@ export const MainMenu = ({ activeSection }: MainMenuProps) => {
       key: `/${MenuSection.OVERVIEW}`,
       label: translate('menu.overview'),
       icon: <Home className={sidebarIconSize} />,
+    },
+    {
+      key: `/${MenuSection.EMS_PLAN_BUILDER}`,
+      label: 'EMS plan builder',
+      icon: <SlidersHorizontal className={sidebarIconSize} />,
     },
     {
       key: `/${MenuSection.LOCATIONS}`,
