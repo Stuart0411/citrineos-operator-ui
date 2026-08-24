@@ -50,7 +50,6 @@ export const CHARGING_STATIONS_LIST_QUERY = gql`
       LatestStatusNotifications {
         id
         stationId
-        ocppConnectionName
         statusNotificationId
         updatedAt
         createdAt
@@ -60,7 +59,6 @@ export const CHARGING_STATIONS_LIST_QUERY = gql`
           createdAt
           evseId
           stationId
-          ocppConnectionName
           id
           timestamp
           updatedAt
@@ -142,7 +140,6 @@ export const FAULTED_CHARGING_STATIONS_LIST_QUERY = gql`
       }
       LatestStatusNotifications {
         id
-        ocppConnectionName
         statusNotificationId
         updatedAt
         createdAt
@@ -151,7 +148,6 @@ export const FAULTED_CHARGING_STATIONS_LIST_QUERY = gql`
           connectorStatus
           createdAt
           evseId
-          ocppConnectionName
           id
           timestamp
           updatedAt
@@ -228,7 +224,6 @@ export const CHARGING_STATIONS_GET_QUERY = gql`
       }
       evses: Evses {
         id
-        ocppConnectionName
         stationId
         evseTypeId
         evseId
@@ -238,7 +233,6 @@ export const CHARGING_STATIONS_GET_QUERY = gql`
         updatedAt
         connectors: Connectors {
           id
-          ocppConnectionName
           evseId
           evseTypeConnectorId
           connectorId
@@ -262,7 +256,6 @@ export const CHARGING_STATIONS_GET_QUERY = gql`
       }
       LatestStatusNotifications {
         id
-        ocppConnectionName
         stationId
         statusNotificationId
         updatedAt
@@ -272,7 +265,6 @@ export const CHARGING_STATIONS_GET_QUERY = gql`
           connectorStatus
           createdAt
           evseId
-          ocppConnectionName
           id
           stationId
           timestamp
@@ -295,7 +287,6 @@ export const CHARGING_STATIONS_GET_QUERY = gql`
       }
       connectors: Connectors {
         id
-        ocppConnectionName
         stationId
         evseId
         connectorId
@@ -332,7 +323,7 @@ export const GET_CHARGING_STATIONS_WITH_LOCATION_AND_LATEST_STATUS_NOTIFICATIONS
       latestStatusNotifications: LatestStatusNotifications {
         statusNotification: StatusNotification {
           id
-          ocppConnectionName
+
           evseId
           connectorId
           timestamp
