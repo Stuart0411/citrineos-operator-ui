@@ -95,6 +95,14 @@ Build and push:
 .\deploy\deploy.ps1 -Image 'ghcr.io/<org>/citrineos-operator-ui' -Tag '2026.08.24.1'
 ```
 
+If deploy stalls while pulling, test image availability first:
+
+```powershell
+docker pull ghcr.io/<org>/citrineos-operator-ui:2026.08.24.1
+```
+
+Then retry deploy.
+
 If port 3000 is already in use, set a different host port before deploy:
 
 ```powershell
