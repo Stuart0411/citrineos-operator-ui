@@ -76,11 +76,11 @@ docker login <your-registry>
 Set build-time variables (example values below):
 
 ```powershell
-$env:NEXT_PUBLIC_API_URL='http://192.168.1.60:8090/v1/graphql'
-$env:NEXT_PUBLIC_WS_URL='ws://192.168.1.60:8090/v1/graphql'
-$env:NEXT_PUBLIC_CITRINE_CORE_URL='http://192.168.1.60:8080'
-$env:NEXT_PUBLIC_FILE_SERVER_URL='http://192.168.1.60:8050'
-$env:NEXTAUTH_URL='http://192.168.1.60:3000'
+$env:NEXT_PUBLIC_API_URL='https://hasura.example.com/v1/graphql'
+$env:NEXT_PUBLIC_WS_URL='wss://hasura.example.com/v1/graphql'
+$env:NEXT_PUBLIC_CITRINE_CORE_URL='https://core.example.com'
+$env:NEXT_PUBLIC_FILE_SERVER_URL='https://files.example.com'
+$env:NEXTAUTH_URL='https://ui.example.com'
 ```
 
 Build and push:
