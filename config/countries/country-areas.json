@@ -65,5 +65,8 @@
     { "name": "Quebec", "shortName": "QC" },
     { "name": "Saskatchewan", "shortName": "SK" },
     { "name": "Yukon", "shortName": "YT" }
+  ],
+  "AU": [
+    { "name": "New South Wales", "shortName": "NSW" }
   ]
 }

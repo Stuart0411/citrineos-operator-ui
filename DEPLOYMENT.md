@@ -56,6 +56,15 @@ Copy-Item .\deploy\ui.runtime.env.example .\deploy\ui.runtime.env
 
 2. Edit `deploy/ui.runtime.env` with real values (`NEXTAUTH_SECRET`, `HASURA_ADMIN_SECRET`, etc.).
 
+	Ensure these endpoint values are set in `deploy/ui.runtime.env`:
+
+	- `NEXT_PUBLIC_API_URL`
+	- `NEXT_PUBLIC_WS_URL`
+	- `NEXT_PUBLIC_CITRINE_CORE_URL`
+	- `NEXT_PUBLIC_FILE_SERVER_URL`
+
+	If omitted, the UI may fall back to localhost endpoints and fail to connect from remote clients.
+
 3. Sign in to your container registry.
 
 ```powershell
@@ -67,11 +76,11 @@ docker login <your-registry>
 Set build-time variables (example values below):
 
 ```powershell
-$env:NEXT_PUBLIC_API_URL='http://192.168.1.60:8090/v1/graphql'
-$env:NEXT_PUBLIC_WS_URL='ws://192.168.1.60:8090/v1/graphql'
-$env:NEXT_PUBLIC_CITRINE_CORE_URL='http://192.168.1.60:8080'
-$env:NEXT_PUBLIC_FILE_SERVER_URL='http://192.168.1.60:8050'
-$env:NEXTAUTH_URL='http://192.168.1.60:3000'
+$env:NEXT_PUBLIC_API_URL='https://hasura.example.com/v1/graphql'
+$env:NEXT_PUBLIC_WS_URL='wss://hasura.example.com/v1/graphql'
+$env:NEXT_PUBLIC_CITRINE_CORE_URL='https://core.example.com'
+$env:NEXT_PUBLIC_FILE_SERVER_URL='https://files.example.com'
+$env:NEXTAUTH_URL='https://ui.example.com'
 ```
 
 Build and push:
@@ -83,6 +92,21 @@ Build and push:
 ## Deploy a tagged image
 
 ```powershell
+.\deploy\deploy.ps1 -Image 'ghcr.io/<org>/citrineos-operator-ui' -Tag '2026.08.24.1'
+```
+
+If deploy stalls while pulling, test image availability first:
+
+```powershell
+docker pull ghcr.io/<org>/citrineos-operator-ui:2026.08.24.1
+```
+
+Then retry deploy.
+
+If port 3000 is already in use, set a different host port before deploy:
+
+```powershell
+$env:UI_HOST_PORT='3001'
 .\deploy\deploy.ps1 -Image 'ghcr.io/<org>/citrineos-operator-ui' -Tag '2026.08.24.1'
 ```
 

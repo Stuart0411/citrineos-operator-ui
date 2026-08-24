@@ -33,6 +33,15 @@ export const TransactionDetailCard = ({
   const { back, push } = useRouter();
   const dispatch = useDispatch();
   const translate = useTranslate();
+  const rawTotalKwh = transaction.totalKwh as unknown;
+  const parsedTotalKwh = Number(rawTotalKwh);
+  const formattedTotalKwh =
+    rawTotalKwh === null ||
+    rawTotalKwh === undefined ||
+    rawTotalKwh === '' ||
+    !Number.isFinite(parsedTotalKwh)
+      ? '0.00'
+      : parsedTotalKwh.toFixed(2);
 
   const showToggleActiveModal = useCallback(() => {
     dispatch(
@@ -135,9 +144,7 @@ export const TransactionDetailCard = ({
           />
           <KeyValueDisplay
             keyLabel="Total kWh"
-            value={`${
-              transaction.totalKwh ? transaction.totalKwh.toFixed(2) : 0
-            } kWh`}
+            value={`${formattedTotalKwh} kWh`}
           />
           <KeyValueDisplay
             keyLabel="Charging State"

@@ -16,20 +16,32 @@ $ErrorActionPreference = 'Stop'
 
 $fullImage = "$Image`:$Tag"
 $env:UI_IMAGE = $fullImage
-
-Write-Host "Deploying image: $fullImage" -ForegroundColor Cyan
-
-docker compose -f ./deploy/docker-compose.release.yml pull
-if ($LASTEXITCODE -ne 0) {
-  throw 'Failed to pull release image'
+if ([string]::IsNullOrWhiteSpace($env:UI_HOST_PORT)) {
+  $env:UI_HOST_PORT = '3000'
 }
 
-docker compose -f ./deploy/docker-compose.release.yml up -d --remove-orphans
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$composeFilePath = Join-Path $scriptDir 'docker-compose.release.yml'
+if (-not (Test-Path $composeFilePath)) {
+  throw "Compose file not found: $composeFilePath"
+}
+
+Write-Host "Deploying image: $fullImage" -ForegroundColor Cyan
+Write-Host "Publishing UI on host port: $($env:UI_HOST_PORT)" -ForegroundColor Cyan
+
+$pullTimeoutSec = 240
+Write-Host "Pulling image (timeout ${pullTimeoutSec}s)..." -ForegroundColor Cyan
+docker pull $fullImage
+if ($LASTEXITCODE -ne 0) {
+  throw "Failed to pull release image $fullImage. Verify the tag exists and run: docker pull $fullImage"
+}
+
+docker compose -f $composeFilePath up -d --remove-orphans
 if ($LASTEXITCODE -ne 0) {
   throw 'Failed to start release stack'
 }
 
-$containerId = (docker compose -f ./deploy/docker-compose.release.yml ps -q citrine-ui).Trim()
+$containerId = (docker compose -f $composeFilePath ps -q citrine-ui).Trim()
 if ([string]::IsNullOrWhiteSpace($containerId)) {
   throw 'Could not resolve running container id for citrine-ui'
 }
@@ -40,6 +52,7 @@ while ((Get-Date) -lt $deadline) {
   $health = (docker inspect --format '{{.State.Health.Status}}' $containerId).Trim()
   if ($health -eq 'healthy') {
     Write-Host "Container is healthy: $containerId" -ForegroundColor Green
+    Write-Host "Open: http://localhost:$($env:UI_HOST_PORT)/" -ForegroundColor Green
     exit 0
   }
   Start-Sleep -Seconds 3
