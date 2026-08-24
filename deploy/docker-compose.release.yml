@@ -7,7 +7,7 @@ services:
     image: ${UI_IMAGE:?Set UI_IMAGE to a fully-qualified image tag}
     pull_policy: always
     ports:
-      - 3000:3000
+      - ${UI_HOST_PORT:-3000}:3000
     env_file:
       - ./ui.runtime.env
     restart: unless-stopped

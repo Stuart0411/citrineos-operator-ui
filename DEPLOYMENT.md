@@ -86,6 +86,13 @@ Build and push:
 .\deploy\deploy.ps1 -Image 'ghcr.io/<org>/citrineos-operator-ui' -Tag '2026.08.24.1'
 ```
 
+If port 3000 is already in use, set a different host port before deploy:
+
+```powershell
+$env:UI_HOST_PORT='3001'
+.\deploy\deploy.ps1 -Image 'ghcr.io/<org>/citrineos-operator-ui' -Tag '2026.08.24.1'
+```
+
 The script will:
 
 - Pull the requested image tag
