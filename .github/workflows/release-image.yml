@@ -8,11 +8,11 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: Image tag to publish (example: 2026.08.24.1)
+        description: "Image tag to publish (example: 2026.08.24.1)"
         required: true
         type: string
       publish_latest:
-        description: Also publish :latest tag
+        description: "Also publish :latest tag"
         required: false
         default: false
         type: boolean
