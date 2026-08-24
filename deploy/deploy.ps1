@@ -20,35 +20,28 @@ if ([string]::IsNullOrWhiteSpace($env:UI_HOST_PORT)) {
   $env:UI_HOST_PORT = '3000'
 }
 
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$composeFilePath = Join-Path $scriptDir 'docker-compose.release.yml'
+if (-not (Test-Path $composeFilePath)) {
+  throw "Compose file not found: $composeFilePath"
+}
+
 Write-Host "Deploying image: $fullImage" -ForegroundColor Cyan
 Write-Host "Publishing UI on host port: $($env:UI_HOST_PORT)" -ForegroundColor Cyan
 
 $pullTimeoutSec = 240
 Write-Host "Pulling image (timeout ${pullTimeoutSec}s)..." -ForegroundColor Cyan
-$pullJob = Start-Job -ScriptBlock {
-  param($composeFilePath)
-  docker compose -f $composeFilePath pull
-} -ArgumentList './deploy/docker-compose.release.yml'
-
-if (-not (Wait-Job -Job $pullJob -Timeout $pullTimeoutSec)) {
-  Stop-Job -Job $pullJob -ErrorAction SilentlyContinue | Out-Null
-  Remove-Job -Job $pullJob -Force -ErrorAction SilentlyContinue | Out-Null
-  throw "Timed out while pulling $fullImage after ${pullTimeoutSec}s. Verify tag exists in GHCR, network to ghcr.io, and docker login state."
-}
-
-Receive-Job -Job $pullJob
-$pullExit = $pullJob.ChildJobs[0].JobStateInfo.State
-Remove-Job -Job $pullJob -Force -ErrorAction SilentlyContinue | Out-Null
-if ($LASTEXITCODE -ne 0 -or $pullExit -ne 'Completed') {
+docker pull $fullImage
+if ($LASTEXITCODE -ne 0) {
   throw "Failed to pull release image $fullImage. Verify the tag exists and run: docker pull $fullImage"
 }
 
-docker compose -f ./deploy/docker-compose.release.yml up -d --remove-orphans
+docker compose -f $composeFilePath up -d --remove-orphans
 if ($LASTEXITCODE -ne 0) {
   throw 'Failed to start release stack'
 }
 
-$containerId = (docker compose -f ./deploy/docker-compose.release.yml ps -q citrine-ui).Trim()
+$containerId = (docker compose -f $composeFilePath ps -q citrine-ui).Trim()
 if ([string]::IsNullOrWhiteSpace($containerId)) {
   throw 'Could not resolve running container id for citrine-ui'
 }

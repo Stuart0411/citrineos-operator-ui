@@ -8,5 +8,10 @@
     "administrativeAreaLabel": "Province",
     "postalCodeLabel": "Postal Code",
     "postalCodePattern": "^[A-Z]\\d[A-Z]\\s?\\d[A-Z]\\d$"
+  },
+  "AU": {
+    "administrativeAreaLabel": "State",
+    "postalCodeLabel": "Post Code",
+    "postalCodePattern": "^\\d{5}(-\\d{4})?$"
   }
 }

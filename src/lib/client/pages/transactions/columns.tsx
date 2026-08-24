@@ -97,12 +97,24 @@ export const transactionsColumns: ColumnConfiguration[] = [
     header: 'Total kWh',
     visible: true,
     sortable: true,
-    cellRender: ({ row }: CellContext<TransactionClass, unknown>) =>
-      row.original.totalKwh ? (
-        <span>{row.original.totalKwh.toFixed(2)} kWh</span>
+    cellRender: ({ row }: CellContext<TransactionClass, unknown>) => {
+      const rawTotalKwh = row.original.totalKwh as unknown;
+
+      if (
+        rawTotalKwh === null ||
+        rawTotalKwh === undefined ||
+        rawTotalKwh === ''
+      ) {
+        return <span>{EMPTY_VALUE}</span>;
+      }
+
+      const totalKwh = Number(rawTotalKwh);
+      return Number.isFinite(totalKwh) ? (
+        <span>{totalKwh.toFixed(2)} kWh</span>
       ) : (
         <span>{EMPTY_VALUE}</span>
-      ),
+      );
+    },
   },
   {
     key: 'status',
