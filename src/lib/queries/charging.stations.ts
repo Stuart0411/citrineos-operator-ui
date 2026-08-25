@@ -17,6 +17,7 @@ export const CHARGING_STATIONS_LIST_QUERY = gql`
       order_by: $order_by
       where: $where
     ) {
+      pkId
       id
       isOnline
       protocol
@@ -194,7 +195,7 @@ export const CHARGING_STATIONS_STATUS_COUNT_QUERY = gql`
 
 export const CHARGING_STATIONS_GET_QUERY = gql`
   query GetChargingStationById($id: Int!) {
-    ChargingStations_by_pk(id: $id) {
+    ChargingStations_by_pk(pkId: $id) {
       id
       tenantId
       isOnline
@@ -369,7 +370,7 @@ export const GET_CHARGING_STATIONS_WITH_LOCATION_AND_LATEST_STATUS_NOTIFICATIONS
 
 export const CHARGING_STATION_ONLINE_STATUS_QUERY = gql`
   query ChargingStationOnlineStatus($id: Int!) {
-    ChargingStations_by_pk(id: $id) {
+    ChargingStations_by_pk(pkId: $id) {
       id
       isOnline
       protocol
@@ -398,7 +399,7 @@ export const CHARGING_STATIONS_EDIT_MUTATION = gql`
     $id: Int!
     $object: ChargingStations_set_input!
   ) {
-    update_ChargingStations_by_pk(pk_columns: { id: $id }, _set: $object) {
+    update_ChargingStations_by_pk(pk_columns: { pkId: $id }, _set: $object) {
       id
       isOnline
       protocol
@@ -411,7 +412,7 @@ export const CHARGING_STATIONS_EDIT_MUTATION = gql`
 
 export const CHARGING_STATIONS_DELETE_MUTATION = gql`
   mutation ChargingStationsDelete($id: Int!) {
-    delete_ChargingStations_by_pk(id: $id) {
+    delete_ChargingStations_by_pk(pkId: $id) {
       id
       isOnline
       protocol
