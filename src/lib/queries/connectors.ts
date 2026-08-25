@@ -6,7 +6,7 @@ import { gql } from 'graphql-tag';
 
 export const CONNECTOR_LIST_FOR_STATION_QUERY = gql`
   query GetPaginatedConnectorListForStation(
-    $stationId: Int!
+    $stationId: String!
     $offset: Int!
     $limit: Int!
     $order_by: [Connectors_order_by!]
@@ -39,7 +39,7 @@ export const CONNECTOR_LIST_FOR_STATION_QUERY = gql`
 `;
 
 export const CONNECTORS_FOR_STATION_QUERY = gql`
-  query GetConnectorListForStation($stationId: Int!) {
+  query GetConnectorListForStation($stationId: String!) {
     Connectors(where: { stationId: { _eq: $stationId } }) {
       connectorId
       createdAt
@@ -58,7 +58,7 @@ export const CONNECTORS_FOR_STATION_QUERY = gql`
 
 export const GET_CONNECTOR_LIST_FOR_STATION_EVSE = gql`
   query GetConnectorListForStationEvse(
-    $stationId: Int!
+    $stationId: String!
     $where: Connectors_bool_exp = {}
     $order_by: [Connectors_order_by!] = {}
     $offset: Int
