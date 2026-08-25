@@ -126,7 +126,7 @@ export const ChargingStationDetailCard = ({
 
     mutate(
       {
-        id: station.id!,
+        id: (station as any).pkId ?? station.id!,
         resource: ResourceType.CHARGING_STATIONS,
         meta: {
           gqlMutation: CHARGING_STATIONS_DELETE_MUTATION,
