@@ -850,10 +850,6 @@ export const EmsOperationsCard = ({
                         ))}
                       </div>
                     ) : null}
-                    <p className="text-xs text-muted-foreground">
-                      Add one or more stations here. The backend applies the
-                      plan only to the station ids included in the request body.
-                    </p>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="ems-site-id">Site id</Label>
@@ -903,11 +899,6 @@ export const EmsOperationsCard = ({
                         }
                       />
                     )}
-                    <p className="text-xs text-muted-foreground">
-                      EVSE id is the charger port number. When the selected
-                      stations share common EVSE ids, this becomes a dropdown
-                      sourced from those stations.
-                    </p>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="ems-strategy">Strategy</Label>
@@ -950,21 +941,9 @@ export const EmsOperationsCard = ({
                         <SelectValue placeholder="Select profile purpose" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="ChargingStationExternalConstraints">
-                          ChargingStationExternalConstraints (EMS/grid)
-                        </SelectItem>
-                        <SelectItem value="ChargingStationMaxProfile">
-                          ChargingStationMaxProfile (hardware ceiling)
-                        </SelectItem>
-                        <SelectItem value="PriorityCharging">
-                          PriorityCharging
-                        </SelectItem>
-                        <SelectItem value="LocalGeneration">
-                          LocalGeneration
-                        </SelectItem>
-                        <SelectItem value="TxDefaultProfile">
-                          TxDefaultProfile
-                        </SelectItem>
+                        <SelectItem value="ChargingStationExternalConstraints">ChargingStationExternalConstraints</SelectItem>
+                        <SelectItem value="ChargingStationMaxProfile">ChargingStationMaxProfile</SelectItem>
+                        <SelectItem value="TxDefaultProfile">TxDefaultProfile</SelectItem>
                         <SelectItem value="TxProfile">TxProfile</SelectItem>
                       </SelectContent>
                     </Select>
@@ -1031,30 +1010,19 @@ export const EmsOperationsCard = ({
                     <div className="mt-4 grid gap-4 md:grid-cols-2">
                       <div className="space-y-2">
                         <div className="flex items-center justify-between gap-3">
-                          <Label htmlFor="ems-allow-discharge-toggle">
-                            Allow discharging
-                          </Label>
+                          <Label htmlFor="ems-allow-discharge-toggle">Allow discharging</Label>
                           <Switch
                             id="ems-allow-discharge-toggle"
                             checked={intentOverride.allowDischarge}
                             onCheckedChange={(checked) =>
-                              setIntentOverride((current) => ({
-                                ...current,
-                                allowDischarge: checked,
-                              }))
+                              setIntentOverride((current) => ({ ...current, allowDischarge: checked }))
                             }
                             disabled={!intentOverride.enabled}
                           />
                         </div>
-                        <p className="text-xs text-muted-foreground">
-                          Sets intent flags.allowDischarge for the override
-                          intent.
-                        </p>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="ems-discharge-budget">
-                          Discharge budget W
-                        </Label>
+                        <Label htmlFor="ems-discharge-budget">Discharge budget W</Label>
                         <Input
                           id="ems-discharge-budget"
                           type="number"
@@ -1062,73 +1030,13 @@ export const EmsOperationsCard = ({
                           placeholder="e.g. 3000"
                           value={intentOverride.dischargeBudgetW}
                           onChange={(event) =>
-                            setIntentOverride((current) => ({
-                              ...current,
-                              dischargeBudgetW: event.target.value,
-                            }))
+                            setIntentOverride((current) => ({ ...current, dischargeBudgetW: event.target.value }))
                           }
-                          disabled={
-                            !intentOverride.enabled ||
-                            !intentOverride.allowDischarge
-                          }
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between gap-3">
-                          <Label htmlFor="ems-centralsetpoint-budget-toggle">
-                            Use CentralSetpoint discharge limit as budget
-                          </Label>
-                          <Switch
-                            id="ems-centralsetpoint-budget-toggle"
-                            checked={
-                              intentOverride.useCentralSetpointDischargeAsBudget
-                            }
-                            onCheckedChange={(checked) =>
-                              setIntentOverride((current) => ({
-                                ...current,
-                                useCentralSetpointDischargeAsBudget: checked,
-                              }))
-                            }
-                            disabled={
-                              !intentOverride.enabled ||
-                              !intentOverride.allowDischarge
-                            }
-                          />
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          If Discharge budget W is blank and mode is
-                          CentralSetpoint, this value is used as
-                          evDischargeBudgetW.
-                        </p>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="ems-centralsetpoint-discharge-limit">
-                          CentralSetpoint discharge limit W
-                        </Label>
-                        <Input
-                          id="ems-centralsetpoint-discharge-limit"
-                          type="number"
-                          min={0}
-                          placeholder="e.g. 2500"
-                          value={intentOverride.centralSetpointDischargeLimitW}
-                          onChange={(event) =>
-                            setIntentOverride((current) => ({
-                              ...current,
-                              centralSetpointDischargeLimitW:
-                                event.target.value,
-                            }))
-                          }
-                          disabled={
-                            !intentOverride.enabled ||
-                            !intentOverride.allowDischarge ||
-                            !intentOverride.useCentralSetpointDischargeAsBudget
-                          }
+                          disabled={!intentOverride.enabled || !intentOverride.allowDischarge}
                         />
                       </div>
                       <div className="space-y-2 md:col-span-2">
-                        <Label htmlFor="ems-intent-ttl">
-                          Intent TTL seconds
-                        </Label>
+                        <Label htmlFor="ems-intent-ttl">Intent TTL seconds</Label>
                         <Input
                           id="ems-intent-ttl"
                           type="number"
@@ -1144,25 +1052,6 @@ export const EmsOperationsCard = ({
                         />
                       </div>
                     </div>
-                  </div>
-                  <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="ems-station-ids">Station ids</Label>
-                    <Textarea
-                      id="ems-station-ids"
-                      value={planRequest.stationIds.join('\n')}
-                      onChange={(event) =>
-                        setPlanField(
-                          'stationIds',
-                          parseStationIds(event.target.value),
-                        )
-                      }
-                      placeholder="nexus-1\nnexus-2"
-                      className="min-h-24"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Advanced override. You can still edit the final station id
-                      list directly.
-                    </p>
                   </div>
                 </div>
 
@@ -1251,40 +1140,24 @@ export const EmsOperationsCard = ({
                 </div>
 
                 <div className="mt-4 rounded-xl border border-border/60 bg-card/70 p-4">
-                  <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
-                    EMS charging plan request body
-                  </p>
-                  <p className="mt-2 text-xs text-muted-foreground">
-                    This request does not carry `dischargeLimit`. The backend
-                    derives discharge behavior from the active site intent plus
-                    station energy transfer policy, then injects
-                    `dischargeLimit` only into the downstream OCPP payload when
-                    export is enabled and a discharge budget is available.
-                  </p>
-                  <pre className="mt-3 overflow-x-auto text-xs leading-6 text-muted-foreground">
-                    {JSON.stringify(
-                      {
-                        ...planRequest,
-                        siteId: planRequest.siteId.trim() || siteId,
-                        stationIds: planRequest.stationIds,
-                      },
-                      null,
-                      2,
-                    )}
-                  </pre>
+                  <button
+                    type="button"
+                    className="flex w-full items-center justify-between text-left"
+                    onClick={() => setPlanRequest((c) => ({ ...c, _showBody: !(c as any)._showBody } as any))}
+                  >
+                    <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">Request body</p>
+                    <ChevronRight className={`size-3 text-muted-foreground transition-transform ${(planRequest as any)._showBody ? 'rotate-90' : ''}`} />
+                  </button>
+                  {(planRequest as any)._showBody ? (
+                    <pre className="mt-3 overflow-x-auto text-xs leading-6 text-muted-foreground">
+                      {JSON.stringify({ ...planRequest, siteId: planRequest.siteId.trim() || siteId, stationIds: planRequest.stationIds }, null, 2)}
+                    </pre>
+                  ) : null}
                 </div>
 
                 {planResponsePayload?.results?.length ? (
                   <div className="mt-4 rounded-xl border border-border/60 bg-card/70 p-4">
-                    <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
-                      Apply result payloads
-                    </p>
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      For apply actions, inspect the emitted confirmation
-                      payload per station here. If `dischargeLimit` is active,
-                      it will appear in the downstream OCPP payload, not in the
-                      EMS request body above.
-                    </p>
+                    <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">Apply results</p>
                     <div className="mt-3 space-y-3">
                       {planResponsePayload.results.map((result) => (
                         <div
