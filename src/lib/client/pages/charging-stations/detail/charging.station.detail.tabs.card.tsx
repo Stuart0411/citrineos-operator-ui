@@ -44,7 +44,7 @@ enum ChargingStationDetailTabType {
   aggregated = 'aggregated',
 }
 
-export const ChargingStationDetailTabsCard = ({ id }: { id: number }) => {
+export const ChargingStationDetailTabsCard = ({ id, stationId }: { id: number; stationId?: string }) => {
   const translate = useTranslate();
 
   const { renderedVisibleColumns } = useColumnPreferences(
@@ -125,7 +125,7 @@ export const ChargingStationDetailTabsCard = ({ id }: { id: number }) => {
                 </p>
               }
             >
-              <OCPPMessages id={id} />
+              <OCPPMessages id={id} stationId={stationId} />
             </CanAccess>
           </TabsContent>
 

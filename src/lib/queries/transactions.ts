@@ -167,7 +167,7 @@ export const GET_TRANSACTIONS_FOR_AUTHORIZATION = gql`
 
 export const GET_TRANSACTION_LIST_FOR_STATION = gql`
   query GetTransactionListForStation(
-    $stationId: Int!
+    $stationId: String!
     $where: [Transactions_bool_exp!] = []
     $order_by: [Transactions_order_by!] = {}
     $offset: Int
