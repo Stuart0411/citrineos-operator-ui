@@ -25,7 +25,9 @@ export const ChargingStationDetail: React.FC<ChargingStationDetailProps> = ({
   const { id } = params;
   const [imageUrl, setImageUrl] = useState<string | null>(null);
 
-  const { query: { data: stationData } } = useOne<any>({
+  const {
+    query: { data: stationData },
+  } = useOne<any>({
     resource: ResourceType.CHARGING_STATIONS,
     id,
     meta: { gqlQuery: CHARGING_STATIONS_GET_QUERY },
