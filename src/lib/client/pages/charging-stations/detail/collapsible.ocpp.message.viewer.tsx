@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { Copy, Plus } from 'lucide-react';
+import { Copy, Plus, X } from 'lucide-react';
 import { MessageTypeId, type OCPPMessageDto } from '@citrineos/base';
 import { Button } from '@lib/client/components/ui/button';
 import React from 'react';
@@ -42,23 +42,33 @@ export const OCPPMessageDetailSheet: React.FC<{
   const formattedJson = JSON.stringify(payload, null, 2);
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="min-w-1/3 pb-30" showCloseButton={false}>
-        {correlationId && (
-          <SheetHeader>
-            <SheetTitle className="text-lg font-bold">
-              <div className="flex items-center gap-1">
-                {correlationId}
-                <Button variant="ghost" size="xs" onClick={async (e) => { e.stopPropagation(); await copy(correlationId); }}>
-                  <Copy className={buttonIconSize} />
-                </Button>
-              </div>
-            </SheetTitle>
-            <SheetDescription className="text-base">
-              <span className="font-semibold">{action} - {origin}</span>{' '}
-              @ {formatDate(timestamp, 'yyyy-MM-dd HH:mm:ss.SSS')}
-            </SheetDescription>
-          </SheetHeader>
-        )}
+      <SheetContent
+        className="min-w-1/3 pb-30"
+        showCloseButton={false}
+        onFocusOutside={(e) => e.preventDefault()}
+        onInteractOutside={(e) => e.preventDefault()}
+      >
+        <div className="flex items-start justify-between gap-2 px-6 pt-4">
+          {correlationId && (
+            <SheetHeader className="flex-1">
+              <SheetTitle className="text-lg font-bold">
+                <div className="flex items-center gap-1">
+                  {correlationId}
+                  <Button variant="ghost" size="xs" onClick={async (e) => { e.stopPropagation(); await copy(correlationId); }}>
+                    <Copy className={buttonIconSize} />
+                  </Button>
+                </div>
+              </SheetTitle>
+              <SheetDescription className="text-base">
+                <span className="font-semibold">{action} - {origin}</span>{' '}
+                @ {formatDate(timestamp, 'yyyy-MM-dd HH:mm:ss.SSS')}
+              </SheetDescription>
+            </SheetHeader>
+          )}
+          <Button variant="ghost" size="xs" className="mt-1 shrink-0" onClick={() => onOpenChange(false)}>
+            <X className={buttonIconSize} />
+          </Button>
+        </div>
         <ScrollArea className="px-4 size-full relative">
           <SyntaxHighlighter language="json" style={okaidia} codeTagProps={{ style: { whiteSpace: 'pre-wrap', wordBreak: 'break-all' } }} customStyle={{ fontSize: '0.8rem', padding: '0.5rem', borderRadius: '4px', maxWidth: '100%' }} wrapLongLines>
             {formattedJson}

@@ -93,6 +93,7 @@ type EmsChargingPlanRequest = {
     | 'LocalFrequency'
     | 'LocalLoadBalancing'
     | 'Idle';
+  applicationPath: 'absolute' | 'dynamic';
 };
 
 type EmsStationOption = ChargingStationDto & {
@@ -141,6 +142,7 @@ type EmsAutoApplyConfig = {
   strategy: EmsChargingPlanRequest['strategy'];
   chargingProfilePurpose: EmsChargingPlanRequest['chargingProfilePurpose'];
   operationMode: EmsChargingPlanRequest['operationMode'];
+  applicationPath: EmsChargingPlanRequest['applicationPath'];
   enabled: boolean;
 };
 
@@ -245,6 +247,7 @@ export const EmsOperationsCard = ({
     strategy: 'equal_share_online',
     chargingProfilePurpose: 'ChargingStationExternalConstraints',
     operationMode: 'ExternalLimits',
+    applicationPath: 'absolute',
   });
   const [planAction, setPlanAction] = useState<EmsPlanAction | null>(null);
   const [planResponse, setPlanResponse] = useState<string | null>(null);
@@ -605,6 +608,7 @@ export const EmsOperationsCard = ({
         strategy: planRequest.strategy,
         chargingProfilePurpose: planRequest.chargingProfilePurpose,
         operationMode: planRequest.operationMode,
+        applicationPath: planRequest.applicationPath,
         enabled,
       };
       const saved = await client.postRaw<EmsAutoApplyConfig>(
@@ -988,6 +992,29 @@ export const EmsOperationsCard = ({
                   <div className="space-y-2 md:col-span-2 rounded-lg border border-border/60 bg-card/60 p-4">
                     <div className="flex items-center justify-between gap-3">
                       <div>
+                        <p className="text-sm font-medium">Application path</p>
+                        <p className="text-xs text-muted-foreground">
+                          Absolute sends SetChargingProfile. Dynamic sends UpdateDynamicSchedule on OCPP 2.1 stations with an active Dynamic profile.
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs text-muted-foreground">Absolute</span>
+                        <Switch
+                          checked={planRequest.applicationPath === 'dynamic'}
+                          onCheckedChange={(checked) =>
+                            setPlanField(
+                              'applicationPath',
+                              checked ? 'dynamic' : 'absolute',
+                            )
+                          }
+                        />
+                        <span className="text-xs text-muted-foreground">Dynamic</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-2 md:col-span-2 rounded-lg border border-border/60 bg-card/60 p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
                         <p className="text-sm font-medium">
                           Intent override (no MQTT required)
                         </p>
@@ -1093,6 +1120,7 @@ export const EmsOperationsCard = ({
                       <p className="text-xs text-muted-foreground">
                         {autoApplyConfig.chargingProfilePurpose} ·{' '}
                         {autoApplyConfig.operationMode} · EVSE{' '}
+                        {autoApplyConfig.applicationPath === 'dynamic' ? 'dynamic path' : 'absolute path'} ·{' '}
                         {autoApplyConfig.evseId} ·{' '}
                         {autoApplyConfig.enabled ? 'active' : 'paused'}
                       </p>

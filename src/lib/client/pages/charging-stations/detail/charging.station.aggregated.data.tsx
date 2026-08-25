@@ -63,7 +63,7 @@ export const AggregatedMeterValuesData: FC<{ id: number }> = ({ id }) => {
     meta: {
       gqlQuery: GET_TRANSACTION_LIST_FOR_STATION,
       gqlVariables: {
-        stationId: id,
+        stationId: String(id),
         limit: 10000,
         offset: 0,
         order_by: { createdAt: 'asc' },
