@@ -5,7 +5,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { ActionType, ResourceType } from '@lib/utils/access.types';
-import { CanAccess } from '@refinedev/core';
+import { CanAccess, useOne } from '@refinedev/core';
+import { CHARGING_STATIONS_GET_QUERY } from '@lib/queries/charging.stations';
 import { ChargingStationDetailCard } from '@lib/client/pages/charging-stations/detail/charging.station.detail.card';
 import { pageFlex, pageMargin } from '@lib/client/styles/page';
 import { ChargingStationDetailTabsCard } from '@lib/client/pages/charging-stations/detail/charging.station.detail.tabs.card';
@@ -23,6 +24,14 @@ export const ChargingStationDetail: React.FC<ChargingStationDetailProps> = ({
 }) => {
   const { id } = params;
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+
+  const { query: { data: stationData } } = useOne<any>({
+    resource: ResourceType.CHARGING_STATIONS,
+    id,
+    meta: { gqlQuery: CHARGING_STATIONS_GET_QUERY },
+    queryOptions: { enabled: !!id },
+  });
+  const stationStringId: string | undefined = stationData?.data?.id;
 
   useEffect(() => {
     if (id) {
@@ -58,7 +67,7 @@ export const ChargingStationDetail: React.FC<ChargingStationDetailProps> = ({
     >
       <div className={`${pageMargin} ${pageFlex}`}>
         <ChargingStationDetailCard id={id} imageUrl={imageUrl} />
-        <ChargingStationDetailTabsCard id={id} />
+        <ChargingStationDetailTabsCard id={id} stationId={stationStringId} />
       </div>
     </CanAccess>
   );

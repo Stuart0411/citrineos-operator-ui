@@ -35,7 +35,7 @@ export const OCPPMessagesExportDialog = ({
 }: {
   open: boolean;
   onOpenChangeAction: (open: boolean) => void;
-  id: number;
+  id: number | string;
   filters: LogicalFilter[];
 }) => {
   const translate = useTranslate();
