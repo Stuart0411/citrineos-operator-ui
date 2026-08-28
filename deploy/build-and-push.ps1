@@ -14,6 +14,37 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
+function Import-EnvFile {
+  param([string]$Path)
+
+  if (-not (Test-Path $Path)) {
+    return
+  }
+
+  Get-Content $Path | ForEach-Object {
+    $line = $_.Trim()
+    if ([string]::IsNullOrWhiteSpace($line) -or $line.StartsWith('#')) {
+      return
+    }
+
+    $separatorIndex = $line.IndexOf('=')
+    if ($separatorIndex -lt 1) {
+      return
+    }
+
+    $name = $line.Substring(0, $separatorIndex).Trim()
+    $value = $line.Substring($separatorIndex + 1).Trim()
+
+    if ([string]::IsNullOrWhiteSpace($name)) {
+      return
+    }
+
+    if ([string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($name))) {
+      [Environment]::SetEnvironmentVariable($name, $value)
+    }
+  }
+}
+
 function Get-EnvValue {
   param([string[]]$Names)
 
@@ -52,6 +83,9 @@ function Ensure-GhcrLogin {
     throw 'Failed to authenticate to ghcr.io. Verify username/token and package permissions.'
   }
 }
+
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+Import-EnvFile -Path (Join-Path $scriptDir 'ui.runtime.env')
 
 $requiredBuildArgs = @(
   'NEXT_PUBLIC_API_URL',
