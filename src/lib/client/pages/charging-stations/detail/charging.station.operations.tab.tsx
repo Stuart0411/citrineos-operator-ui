@@ -11,6 +11,7 @@ import { useOne } from '@refinedev/core';
 import { Skeleton } from '@lib/client/components/ui/skeleton';
 import { NoDataFoundCard } from '@lib/client/components/no-data-found-card';
 import { ChargingStationCommandsPanel } from './charging.station.commands.panel';
+import { ChargingStationSmartChargingPanel } from './charging.station.smart.charging.panel';
 
 export const ChargingStationOperationsTab = ({ id }: { id: number }) => {
   const {
@@ -34,5 +35,10 @@ export const ChargingStationOperationsTab = ({ id }: { id: number }) => {
     return <NoDataFoundCard message="Station not found." />;
   }
 
-  return <ChargingStationCommandsPanel station={station} />;
+  return (
+    <div className="space-y-4">
+      <ChargingStationCommandsPanel station={station} />
+      <ChargingStationSmartChargingPanel station={station} />
+    </div>
+  );
 };

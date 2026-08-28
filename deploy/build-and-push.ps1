@@ -14,6 +14,45 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
+function Get-EnvValue {
+  param([string[]]$Names)
+
+  foreach ($name in $Names) {
+    $value = [Environment]::GetEnvironmentVariable($name)
+    if (-not [string]::IsNullOrWhiteSpace($value)) {
+      return $value
+    }
+  }
+
+  return $null
+}
+
+function Ensure-GhcrLogin {
+  param([string]$RegistryImage)
+
+  if (-not $RegistryImage.StartsWith('ghcr.io/', [System.StringComparison]::OrdinalIgnoreCase)) {
+    return
+  }
+
+  $username = Get-EnvValue @('GHCR_USERNAME', 'GITHUB_ACTOR', 'GITHUB_USERNAME')
+  $token = Get-EnvValue @('GHCR_TOKEN', 'GITHUB_TOKEN', 'CR_PAT')
+
+  if ([string]::IsNullOrWhiteSpace($username) -or [string]::IsNullOrWhiteSpace($token)) {
+    throw @(
+      'Missing GHCR credentials for image push.'
+      'Set username env var: GHCR_USERNAME (or GITHUB_ACTOR/GITHUB_USERNAME).'
+      'Set token env var: GHCR_TOKEN (or GITHUB_TOKEN/CR_PAT).'
+      'Token must include package write permissions for ghcr.io.'
+    ) -join [Environment]::NewLine
+  }
+
+  Write-Host "Authenticating to ghcr.io as $username" -ForegroundColor Cyan
+  $token | docker login ghcr.io -u $username --password-stdin | Out-Null
+  if ($LASTEXITCODE -ne 0) {
+    throw 'Failed to authenticate to ghcr.io. Verify username/token and package permissions.'
+  }
+}
+
 $requiredBuildArgs = @(
   'NEXT_PUBLIC_API_URL',
   'NEXT_PUBLIC_WS_URL',
@@ -34,6 +73,8 @@ foreach ($name in $requiredBuildArgs) {
 $fullImage = "$Image`:$Tag"
 Write-Host "Building and pushing $fullImage" -ForegroundColor Cyan
 
+Ensure-GhcrLogin -RegistryImage $Image
+
 $cmd = @(
   'buildx', 'build',
   '--platform', 'linux/amd64',
@@ -47,12 +88,22 @@ if ($LASTEXITCODE -ne 0) {
   throw "docker buildx build failed for $fullImage"
 }
 
+docker buildx imagetools inspect $fullImage | Out-Null
+if ($LASTEXITCODE -ne 0) {
+  throw "Push verification failed for $fullImage"
+}
+
 if ($AlsoTagLatest) {
   $latestImage = "$Image`:latest"
   Write-Host "Also publishing $latestImage" -ForegroundColor Cyan
   docker buildx imagetools create --tag $latestImage $fullImage
   if ($LASTEXITCODE -ne 0) {
     throw "Failed to publish $latestImage"
+  }
+
+  docker buildx imagetools inspect $latestImage | Out-Null
+  if ($LASTEXITCODE -ne 0) {
+    throw "Push verification failed for $latestImage"
   }
 }
 
