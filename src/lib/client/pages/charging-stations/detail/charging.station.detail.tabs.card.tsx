@@ -82,7 +82,7 @@ export const ChargingStationDetailTabsCard = ({
           }
           onValueChange={(selectedTab: string) => setTab(selectedTab)}
         >
-          <TabsList>
+          <TabsList className="w-full justify-start overflow-x-auto whitespace-nowrap">
             <TabsTrigger value={ChargingStationDetailTabType.evses}>
               EVSEs
             </TabsTrigger>
@@ -184,7 +184,7 @@ export const ChargingStationDetailTabsCard = ({
                   sorters: DEFAULT_SORTERS,
                   meta: {
                     gqlQuery: GET_TRANSACTION_LIST_FOR_STATION,
-                    gqlVariables: { stationId: id },
+                    gqlVariables: { stationId: String(id) },
                   },
                   queryOptions: getPlainToInstanceOptions(TransactionClass),
                 }}
