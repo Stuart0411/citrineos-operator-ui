@@ -57,6 +57,7 @@ export const ChargingStationActiveProfilesTab = ({
   const tenantId = useTenantId();
   const [clearingId, setClearingId] = useState<number | null>(null);
   const [isClearingAll, setIsClearingAll] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const {
     query: { data, isLoading, refetch },
@@ -79,6 +80,15 @@ export const ChargingStationActiveProfilesTab = ({
 
   const rows = useMemo(() => data?.data ?? [], [data?.data]);
   const clearableRows = rows.filter((row) => Number.isInteger(row.id));
+
+  const refreshProfiles = async () => {
+    try {
+      setIsRefreshing(true);
+      await refetch();
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const clearProfileById = async (profileId: number): Promise<boolean> => {
     if (!stationId) {
@@ -155,14 +165,24 @@ export const ChargingStationActiveProfilesTab = ({
         <p className="text-sm text-muted-foreground">
           Active charging profiles reported for this station.
         </p>
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={isLoading || isClearingAll || clearableRows.length === 0}
-          onClick={() => void clearAllProfiles()}
-        >
-          {isClearingAll ? 'Clearing...' : 'Clear all active'}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={isLoading || isClearingAll || isRefreshing}
+            onClick={() => void refreshProfiles()}
+          >
+            {isRefreshing ? 'Refreshing...' : 'Get Charging Profiles'}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={isLoading || isClearingAll || isRefreshing || clearableRows.length === 0}
+            onClick={() => void clearAllProfiles()}
+          >
+            {isClearingAll ? 'Clearing...' : 'Clear all active'}
+          </Button>
+        </div>
       </div>
 
       <div className="rounded-md border">

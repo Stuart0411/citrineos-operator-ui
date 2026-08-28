@@ -33,8 +33,14 @@ import config from '@lib/utils/config';
 import { MenuSection } from '@lib/client/components/main-menu/main.menu';
 import { ChevronRight, RefreshCw, X, Zap } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useList } from '@refinedev/core';
+
+type EmsActiveTransaction = {
+  transactionId?: string | null;
+  evseId?: number | null;
+  isActive?: boolean | null;
+};
 
 type EmsSiteIntent = {
   siteId: string;
@@ -77,6 +83,7 @@ type EmsChargingPlanRequest = {
   siteId: string;
   stationIds: string[];
   evseId: number;
+  transactionId?: string;
   strategy: 'equal_share_online' | 'equal_share_all';
   chargingProfilePurpose:
     | 'ChargingStationExternalConstraints'
@@ -244,6 +251,7 @@ export const EmsOperationsCard = ({
     siteId,
     stationIds: [],
     evseId: 1,
+    transactionId: '',
     strategy: 'equal_share_online',
     chargingProfilePurpose: 'ChargingStationExternalConstraints',
     operationMode: 'ExternalLimits',
@@ -401,6 +409,55 @@ export const EmsOperationsCard = ({
       [key]: value,
     }));
   };
+
+  const suggestedTxProfileTransaction = useMemo(() => {
+    for (const station of selectedStations) {
+      const transactions = Array.isArray((station as any).transactions)
+        ? ((station as any).transactions as EmsActiveTransaction[])
+        : [];
+
+      const evseMatched = transactions.find(
+        (transaction) =>
+          Number(transaction?.evseId) === Number(planRequest.evseId) &&
+          Boolean(transaction?.transactionId),
+      );
+      if (evseMatched?.transactionId) {
+        return {
+          stationId: toStationId(station) ?? 'unknown',
+          transactionId: String(evseMatched.transactionId),
+        };
+      }
+
+      const firstActive = transactions.find(
+        (transaction) => transaction.isActive !== false && transaction.transactionId,
+      );
+      if (firstActive?.transactionId) {
+        return {
+          stationId: toStationId(station) ?? 'unknown',
+          transactionId: String(firstActive.transactionId),
+        };
+      }
+    }
+
+    return null;
+  }, [selectedStations, planRequest.evseId]);
+
+  useEffect(() => {
+    if (planRequest.chargingProfilePurpose !== 'TxProfile') {
+      return;
+    }
+
+    if (!planRequest.transactionId?.trim() && suggestedTxProfileTransaction?.transactionId) {
+      setPlanRequest((current) => ({
+        ...current,
+        transactionId: suggestedTxProfileTransaction.transactionId,
+      }));
+    }
+  }, [
+    planRequest.chargingProfilePurpose,
+    planRequest.transactionId,
+    suggestedTxProfileTransaction,
+  ]);
 
   const parseStationIds = (value: string) =>
     value
@@ -666,11 +723,24 @@ export const EmsOperationsCard = ({
       ...planRequest,
       siteId: trimmedSiteId,
       stationIds,
+      transactionId:
+        planRequest.chargingProfilePurpose === 'TxProfile'
+          ? (planRequest.transactionId ?? '').trim()
+          : undefined,
       evseId:
         Number.isFinite(planRequest.evseId) && planRequest.evseId > 0
           ? planRequest.evseId
           : 1,
     };
+
+    if (
+      requestBody.chargingProfilePurpose === 'TxProfile' &&
+      !requestBody.transactionId
+    ) {
+      setPlanError('Transaction ID is required for TxProfile.');
+      setPlanAction(null);
+      return;
+    }
 
     try {
       if (intentOverride.enabled) {
@@ -952,6 +1022,39 @@ export const EmsOperationsCard = ({
                       </SelectContent>
                     </Select>
                   </div>
+                  {planRequest.chargingProfilePurpose === 'TxProfile' ? (
+                    <div className="space-y-2 md:col-span-2">
+                      <Label htmlFor="ems-transaction-id">Transaction ID</Label>
+                      <div className="flex gap-2">
+                        <Input
+                          id="ems-transaction-id"
+                          value={planRequest.transactionId ?? ''}
+                          onChange={(event) =>
+                            setPlanField('transactionId', event.target.value)
+                          }
+                          placeholder="Required for TxProfile"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() =>
+                            setPlanField(
+                              'transactionId',
+                              suggestedTxProfileTransaction?.transactionId ?? '',
+                            )
+                          }
+                          disabled={!suggestedTxProfileTransaction?.transactionId}
+                        >
+                          Use current
+                        </Button>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {suggestedTxProfileTransaction?.transactionId
+                          ? `Detected current transaction ${suggestedTxProfileTransaction.transactionId} on station ${suggestedTxProfileTransaction.stationId}.`
+                          : 'No active transaction detected on selected stations. Enter transaction ID manually.'}
+                      </p>
+                    </div>
+                  ) : null}
                   <div className="space-y-2">
                     <Label htmlFor="ems-mode">Operation mode</Label>
                     <Select

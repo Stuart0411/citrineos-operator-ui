@@ -55,6 +55,12 @@ type ChargingProfileRow = {
   updatedAt?: string | null;
 };
 
+type StationTransactionRow = {
+  transactionId?: string | null;
+  evseId?: number | null;
+  isActive?: boolean | null;
+};
+
 type TelemetrySnapshot = {
   socPercent?: number;
   chargingRateKw?: number;
@@ -240,6 +246,34 @@ export const ChargingStationSmartChargingPanel = ({
   const [dischargeLimitInput, setDischargeLimitInput] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  const activeTransactions = useMemo(() => {
+    const source = Array.isArray((station as any).transactions)
+      ? ((station as any).transactions as StationTransactionRow[])
+      : [];
+    return source.filter((transaction) => Boolean(transaction?.transactionId));
+  }, [station]);
+
+  const suggestedTransactionId = useMemo(() => {
+    const evseId = Number(selectedEvseId);
+    const evseMatched = activeTransactions.find(
+      (transaction) =>
+        Number.isInteger(evseId) && Number(transaction?.evseId) === evseId,
+    );
+    if (evseMatched?.transactionId) {
+      return String(evseMatched.transactionId);
+    }
+
+    const firstActive = activeTransactions.find(
+      (transaction) => transaction.isActive !== false && transaction.transactionId,
+    );
+    if (firstActive?.transactionId) {
+      return String(firstActive.transactionId);
+    }
+
+    const fallback = activeTransactions[0]?.transactionId;
+    return fallback ? String(fallback) : '';
+  }, [activeTransactions, selectedEvseId]);
+
   const {
     query: { data: profilesData, isLoading: profilesLoading, refetch: refetchProfiles },
   } = useList<ChargingProfileRow>({
@@ -278,6 +312,22 @@ export const ChargingStationSmartChargingPanel = ({
       setSelectedEvseId(String(evseOptions[0]));
     }
   }, [evseOptions, selectedEvseId]);
+
+  useEffect(() => {
+    if (controlMode !== 'setProfile' || profilePurpose !== 'TxProfile') {
+      return;
+    }
+
+    if (!transactionIdInput.trim() && suggestedTransactionId) {
+      setTransactionIdInput(suggestedTransactionId);
+    }
+  }, [
+    controlMode,
+    profilePurpose,
+    suggestedTransactionId,
+    transactionIdInput,
+    setTransactionIdInput,
+  ]);
 
   const {
     query: { data: logsData, isLoading: logsLoading },
@@ -662,11 +712,26 @@ export const ChargingStationSmartChargingPanel = ({
             {profilePurpose === 'TxProfile' ? (
               <div className="space-y-2">
                 <Label>Transaction ID</Label>
-                <Input
-                  value={transactionIdInput}
-                  onChange={(event) => setTransactionIdInput(event.target.value)}
-                  placeholder="Required for TxProfile"
-                />
+                <div className="flex gap-2">
+                  <Input
+                    value={transactionIdInput}
+                    onChange={(event) => setTransactionIdInput(event.target.value)}
+                    placeholder="Required for TxProfile"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setTransactionIdInput(suggestedTransactionId)}
+                    disabled={!suggestedTransactionId}
+                  >
+                    Use current
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {suggestedTransactionId
+                    ? `Detected current transaction ${suggestedTransactionId} for this station.`
+                    : 'No active transaction detected. Enter transaction ID manually.'}
+                </p>
               </div>
             ) : null}
 
