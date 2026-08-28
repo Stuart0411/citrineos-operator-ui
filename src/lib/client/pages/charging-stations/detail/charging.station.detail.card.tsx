@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 'use client';
 
-import type { ChargingStationDto, OCPPMessageDto } from '@citrineos/base';
+import type { OCPPMessageDto } from '@citrineos/base';
 import { ChargingStationProps, OCPPMessageProps } from '@citrineos/base';
 import { MenuSection } from '@lib/client/components/main-menu/main.menu';
 import { ModalComponentType } from '@lib/client/components/modals/modal.types';
@@ -33,12 +33,10 @@ import {
   useOne,
   useTranslate,
 } from '@refinedev/core';
-import { instanceToPlain } from 'class-transformer';
 import {
   ChevronLeft,
   Edit,
   Info,
-  MoreHorizontal,
   RefreshCw,
   Trash2,
 } from 'lucide-react';
@@ -57,14 +55,10 @@ import { KeyValueDisplay } from '@lib/client/components/key-value-display';
 import { Badge } from '@lib/client/components/ui/badge';
 import Image from 'next/image';
 import { isGcp } from '@lib/server/clients/file/isGcp';
-import { StartTransactionButton } from '@lib/client/pages/charging-stations/start.transaction.button';
-import { StopTransactionButton } from '@lib/client/pages/charging-stations/stop.transaction.button';
-import { CommandsUnavailableText } from '@lib/client/pages/charging-stations/commands.unavailable.text';
-import { ResetButton } from '@lib/client/pages/charging-stations/reset.button';
-import { ForceDisconnectButton } from '../force.disconnect.button';
 import { Skeleton } from '@lib/client/components/ui/skeleton';
 import { NoDataFoundCard } from '@lib/client/components/no-data-found-card';
 import { isEmpty } from '@lib/utils/assertion';
+import { ChargingStationCommandsPanel } from './charging.station.commands.panel';
 
 const UNKNOWN_TEXT = 'Unknown';
 
@@ -140,31 +134,6 @@ export const ChargingStationDetailCard = ({
     );
   }, [station, mutate, push]);
 
-  const showForceDisconnectModal = useCallback(
-    (station: ChargingStationDto) => {
-      dispatch(
-        openModal({
-          title: translate('ChargingStations.forceDisconnect'),
-          modalComponentType: ModalComponentType.forceDisconnect,
-          modalComponentProps: { station: instanceToPlain(station) },
-        }),
-      );
-    },
-    [dispatch, translate],
-  );
-
-  const showOtherCommandsModal = useCallback(() => {
-    if (!station) return;
-
-    dispatch(
-      openModal({
-        title: translate('ChargingStations.otherCommands'),
-        modalComponentType: ModalComponentType.otherCommands,
-        modalComponentProps: { station: instanceToPlain(station) },
-      }),
-    );
-  }, [dispatch, station, translate]);
-
   const showToggleOnlineModal = useCallback(() => {
     if (!station) return;
 
@@ -189,9 +158,6 @@ export const ChargingStationDetailCard = ({
       />
     );
   }
-
-  const hasActiveTransactions =
-    station.transactions && station.transactions.length > 0;
 
   let latestTimestamp = NOT_APPLICABLE;
   if (latestLog) {
@@ -456,41 +422,7 @@ export const ChargingStationDetailCard = ({
 
         {/* Command Buttons */}
         <div className="mt-6">
-          <CanAccess
-            resource={ResourceType.CHARGING_STATIONS}
-            action={ActionType.COMMAND}
-            params={{ id: station.id }}
-          >
-            <div className="flex flex-col gap-2">
-              {!station.isOnline && <CommandsUnavailableText />}
-              <div className="flex gap-4 flex-wrap">
-                <ForceDisconnectButton
-                  id={(station as any).pkId}
-                  onClickAction={() => showForceDisconnectModal(station)}
-                />
-                {!hasActiveTransactions && (
-                  <StartTransactionButton
-                    station={station}
-                    disabled={!station.isOnline}
-                  />
-                )}
-                {hasActiveTransactions && (
-                  <StopTransactionButton
-                    station={station}
-                    disabled={!station.isOnline}
-                  />
-                )}
-                <ResetButton station={station} disabled={!station.isOnline} />
-                <Button
-                  onClick={showOtherCommandsModal}
-                  disabled={!station.isOnline}
-                >
-                  <MoreHorizontal className={buttonIconSize} />
-                  {translate('ChargingStations.otherCommands')}
-                </Button>
-              </div>
-            </div>
-          </CanAccess>
+          <ChargingStationCommandsPanel station={station} />
         </div>
       </CardContent>
     </Card>

@@ -34,6 +34,7 @@ export const ChargingStationDetail: React.FC<ChargingStationDetailProps> = ({
     queryOptions: { enabled: !!id },
   });
   const stationStringId: string | undefined = stationData?.data?.id;
+  const stationProtocol = stationData?.data?.protocol;
 
   useEffect(() => {
     if (id) {
@@ -69,7 +70,11 @@ export const ChargingStationDetail: React.FC<ChargingStationDetailProps> = ({
     >
       <div className={`${pageMargin} ${pageFlex}`}>
         <ChargingStationDetailCard id={id} imageUrl={imageUrl} />
-        <ChargingStationDetailTabsCard id={id} stationId={stationStringId} />
+        <ChargingStationDetailTabsCard
+          id={id}
+          stationId={stationStringId}
+          protocol={stationProtocol}
+        />
       </div>
     </CanAccess>
   );
