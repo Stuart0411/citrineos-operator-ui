@@ -99,6 +99,26 @@ const normalizePowerToKw = (value: number, unit?: string): number => {
   return value;
 };
 
+const normalizeSignedChargingRateKw = (sample: Record<string, any>): number | undefined => {
+  const rawValue = Number(sample?.value);
+  if (!Number.isFinite(rawValue)) {
+    return undefined;
+  }
+
+  const measurand = String(sample?.measurand ?? '').toLowerCase();
+  const normalizedKw = normalizePowerToKw(rawValue, sample?.unit);
+
+  // UI convention: charging/import is positive, discharging/export is negative.
+  if (measurand.includes('import')) {
+    return Math.abs(normalizedKw);
+  }
+  if (measurand.includes('export')) {
+    return -Math.abs(normalizedKw);
+  }
+
+  return normalizedKw;
+};
+
 const extractPayload = (rawMessage: unknown): any => {
   if (Array.isArray(rawMessage)) {
     const messageTypeId = rawMessage[0];
@@ -181,9 +201,11 @@ const extractTelemetrySnapshot = (rows: Array<Pick<OCPPMessageDto, 'message' | '
           measurand.startsWith('power')
         );
       });
-      const powerValue = Number(powerSample?.value);
-      if (Number.isFinite(powerValue)) {
-        snapshot.chargingRateKw = normalizePowerToKw(powerValue, powerSample?.unit);
+      if (powerSample) {
+        const signedRateKw = normalizeSignedChargingRateKw(powerSample);
+        if (signedRateKw !== undefined) {
+          snapshot.chargingRateKw = signedRateKw;
+        }
         if (!snapshot.observedAt) {
           snapshot.observedAt = row.timestamp;
           snapshot.sourceAction = row.action;

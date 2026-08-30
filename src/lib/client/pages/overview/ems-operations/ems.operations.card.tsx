@@ -360,10 +360,6 @@ export const EmsOperationsCard = ({
     });
   }, [currentIntent?.siteId]);
 
-  if (loading) {
-    return <OverviewCardSkeleton />;
-  }
-
   const activeLimits = currentIntent?.constraints;
   const hasIntent = Boolean(currentIntent);
   const cardTitle =
@@ -765,6 +761,10 @@ export const EmsOperationsCard = ({
       setPlanAction(null);
     }
   };
+
+  if (loading) {
+    return <OverviewCardSkeleton />;
+  }
 
   return (
     <Card className="flex h-full min-h-[36rem] max-h-[75vh] flex-col overflow-hidden border-border/70 bg-card/80 shadow-sm backdrop-blur-sm">
