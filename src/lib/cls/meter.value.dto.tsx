@@ -13,6 +13,9 @@ export class MeterValueClass implements Partial<MeterValueDto> {}
 
 // todo share below code with @citrineos/base
 
+const normalizeContextToken = (context: string): string =>
+  context.toLowerCase().replace(/[._\s-]/g, '');
+
 export const getTimestampToMeasurandArray = (
   sortedMeterValues: MeterValueDto[],
   measurand: MeasurandEnumType,
@@ -22,28 +25,38 @@ export const getTimestampToMeasurandArray = (
 
   const baseTime = new Date(sortedMeterValues[0].timestamp).getTime();
   const result: [number, string][] = [];
+  const normalizedValidContexts = new Set(
+    Array.from(validContextsArg).map((context) =>
+      normalizeContextToken(String(context)),
+    ),
+  );
 
   for (const meterValue of sortedMeterValues) {
-    if (
-      !meterValue.sampledValue[0].context ||
-      (typeof meterValue.sampledValue[0].context === 'string' &&
-        validContextsArg.has(
-          meterValue.sampledValue[0]
-            .context as OCPP2_0_1.ReadingContextEnumType,
-        ))
-    ) {
-      const overallValue = findOverallValue(
-        meterValue.sampledValue as unknown as SampledValue[],
-        measurand,
-      );
-      if (overallValue) {
-        const timestampEpoch = new Date(meterValue.timestamp).getTime();
-        const elapsedTime = (timestampEpoch - baseTime) / 1000;
-        const normalizedValue = normalizeValue(overallValue);
-        if (normalizedValue !== null) {
-          result.push([elapsedTime, normalizedValue]);
-        }
-      }
+    const overallValue = findOverallValue(
+      meterValue.sampledValue as unknown as SampledValue[],
+      measurand,
+    );
+    if (!overallValue) {
+      continue;
+    }
+
+    const sampleContext =
+      typeof overallValue.context === 'string'
+        ? overallValue.context
+        : undefined;
+    const contextAllowed =
+      !sampleContext ||
+      normalizedValidContexts.has(normalizeContextToken(sampleContext));
+
+    if (!contextAllowed) {
+      continue;
+    }
+
+    const timestampEpoch = new Date(meterValue.timestamp).getTime();
+    const elapsedTime = (timestampEpoch - baseTime) / 1000;
+    const normalizedValue = normalizeValue(overallValue);
+    if (normalizedValue !== null) {
+      result.push([elapsedTime, normalizedValue]);
     }
   }
 
