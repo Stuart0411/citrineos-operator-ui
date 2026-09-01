@@ -99,21 +99,25 @@ const normalizePowerToKw = (value: number, unit?: string): number => {
   return value;
 };
 
-const normalizeSignedChargingRateKw = (sample: Record<string, any>): number | undefined => {
+const normalizeSignedChargingRateKw = (
+  sample: Record<string, any>,
+): number | undefined => {
   const rawValue = Number(sample?.value);
   if (!Number.isFinite(rawValue)) {
     return undefined;
   }
 
   const measurand = String(sample?.measurand ?? '').toLowerCase();
-  const normalizedKw = normalizePowerToKw(rawValue, sample?.unit);
+  const unit = sample?.unit ?? sample?.unitOfMeasure?.unit;
+  const normalizedKw = normalizePowerToKw(rawValue, unit);
 
-  // UI convention: charging/import is positive, discharging/export is negative.
+  // UI convention: charging is positive, discharging is negative.
+  // Import keeps native sign. Export is inverted because its sign convention is opposite.
   if (measurand.includes('import')) {
-    return Math.abs(normalizedKw);
+    return normalizedKw;
   }
   if (measurand.includes('export')) {
-    return -Math.abs(normalizedKw);
+    return -normalizedKw;
   }
 
   return normalizedKw;
@@ -151,7 +155,8 @@ const selectPreferredPowerSample = (
   }
 
   return powerSamples.sort((left, right) => {
-    const priorityDiff = getPowerSamplePriority(right) - getPowerSamplePriority(left);
+    const priorityDiff =
+      getPowerSamplePriority(right) - getPowerSamplePriority(left);
     if (priorityDiff !== 0) {
       return priorityDiff;
     }
@@ -210,7 +215,9 @@ const collectSampledValues = (payload: any): Array<Record<string, any>> => {
   return samples;
 };
 
-const extractTelemetrySnapshot = (rows: Array<Pick<OCPPMessageDto, 'message' | 'timestamp' | 'action'>>): TelemetrySnapshot => {
+const extractTelemetrySnapshot = (
+  rows: Array<Pick<OCPPMessageDto, 'message' | 'timestamp' | 'action'>>,
+): TelemetrySnapshot => {
   const snapshot: TelemetrySnapshot = {};
   let selectedPowerSamplePriority = -1;
 
@@ -241,7 +248,8 @@ const extractTelemetrySnapshot = (rows: Array<Pick<OCPPMessageDto, 'message' | '
       const samplePriority = getPowerSamplePriority(powerSample);
       if (
         signedRateKw !== undefined &&
-        (snapshot.chargingRateKw === undefined || samplePriority > selectedPowerSamplePriority)
+        (snapshot.chargingRateKw === undefined ||
+          samplePriority > selectedPowerSamplePriority)
       ) {
         snapshot.chargingRateKw = signedRateKw;
         selectedPowerSamplePriority = samplePriority;
@@ -250,7 +258,10 @@ const extractTelemetrySnapshot = (rows: Array<Pick<OCPPMessageDto, 'message' | '
       }
     }
 
-    if (snapshot.socPercent !== undefined && snapshot.chargingRateKw !== undefined) {
+    if (
+      snapshot.socPercent !== undefined &&
+      snapshot.chargingRateKw !== undefined
+    ) {
       break;
     }
   }
@@ -260,7 +271,11 @@ const extractTelemetrySnapshot = (rows: Array<Pick<OCPPMessageDto, 'message' | '
 
 const generateProfileId = (): number => {
   const nowSeconds = Math.floor(Date.now() / 1000);
-  if (Number.isInteger(nowSeconds) && nowSeconds > 0 && nowSeconds <= 2147483647) {
+  if (
+    Number.isInteger(nowSeconds) &&
+    nowSeconds > 0 &&
+    nowSeconds <= 2147483647
+  ) {
     return nowSeconds;
   }
   return Math.floor(Math.random() * 1000000000) + 1;
@@ -276,7 +291,9 @@ export const ChargingStationSmartChargingPanel = ({
   const isOcpp21 = station.protocol === OCPPVersion.OCPP2_1;
 
   const evseOptions = useMemo(() => {
-    const source = Array.isArray((station as any).evses) ? (station as any).evses : [];
+    const source = Array.isArray((station as any).evses)
+      ? (station as any).evses
+      : [];
     const values: number[] = source.reduce((result: number[], evse: any) => {
       const candidate = Number(evse?.evseTypeId ?? evse?.evseId);
       if (Number.isInteger(candidate) && candidate >= 0) {
@@ -289,9 +306,11 @@ export const ChargingStationSmartChargingPanel = ({
 
   const [controlMode, setControlMode] = useState<ControlMode>('dynamicUpdate');
   const [profileKind, setProfileKind] = useState<ProfileKind>('Dynamic');
-  const [profilePurpose, setProfilePurpose] =
-    useState<ProfilePurpose>('ChargingStationExternalConstraints');
-  const [operationMode, setOperationMode] = useState<OperationMode>('ExternalLimits');
+  const [profilePurpose, setProfilePurpose] = useState<ProfilePurpose>(
+    'ChargingStationExternalConstraints',
+  );
+  const [operationMode, setOperationMode] =
+    useState<OperationMode>('ExternalLimits');
   const [selectedEvseId, setSelectedEvseId] = useState<string>(
     String(evseOptions[0] ?? 1),
   );
@@ -323,7 +342,8 @@ export const ChargingStationSmartChargingPanel = ({
     }
 
     const firstActive = activeTransactions.find(
-      (transaction) => transaction.isActive !== false && transaction.transactionId,
+      (transaction) =>
+        transaction.isActive !== false && transaction.transactionId,
     );
     if (firstActive?.transactionId) {
       return String(firstActive.transactionId);
@@ -334,7 +354,11 @@ export const ChargingStationSmartChargingPanel = ({
   }, [activeTransactions, selectedEvseId]);
 
   const {
-    query: { data: profilesData, isLoading: profilesLoading, refetch: refetchProfiles },
+    query: {
+      data: profilesData,
+      isLoading: profilesLoading,
+      refetch: refetchProfiles,
+    },
   } = useList<ChargingProfileRow>({
     resource: 'ChargingProfiles',
     meta: {
@@ -367,7 +391,10 @@ export const ChargingStationSmartChargingPanel = ({
   }, [dynamicProfileId, dynamicProfiles]);
 
   useEffect(() => {
-    if (evseOptions.length > 0 && !evseOptions.includes(Number(selectedEvseId))) {
+    if (
+      evseOptions.length > 0 &&
+      !evseOptions.includes(Number(selectedEvseId))
+    ) {
       setSelectedEvseId(String(evseOptions[0]));
     }
   }, [evseOptions, selectedEvseId]);
@@ -433,8 +460,14 @@ export const ChargingStationSmartChargingPanel = ({
       throw new Error('Setpoint is required for the selected operation mode.');
     }
 
-    if (limitOrDischargeRequired && limit === undefined && dischargeLimit === undefined) {
-      throw new Error('Provide at least a limit or discharge limit for ExternalLimits mode.');
+    if (
+      limitOrDischargeRequired &&
+      limit === undefined &&
+      dischargeLimit === undefined
+    ) {
+      throw new Error(
+        'Provide at least a limit or discharge limit for ExternalLimits mode.',
+      );
     }
 
     const period: Record<string, number | string> = {
@@ -453,7 +486,9 @@ export const ChargingStationSmartChargingPanel = ({
     }
 
     if (Object.keys(period).length <= 2) {
-      throw new Error('Provide at least one control value (limit, setpoint, or discharge limit).');
+      throw new Error(
+        'Provide at least one control value (limit, setpoint, or discharge limit).',
+      );
     }
 
     return period;
@@ -466,7 +501,9 @@ export const ChargingStationSmartChargingPanel = ({
     }
 
     if (!isOcpp21) {
-      showError('This control panel currently supports OCPP 2.1 stations only.');
+      showError(
+        'This control panel currently supports OCPP 2.1 stations only.',
+      );
       return;
     }
 
@@ -486,7 +523,9 @@ export const ChargingStationSmartChargingPanel = ({
         const fallbackDynamicId = dynamicProfiles[0]?.id;
         const profileId = Number(dynamicProfileId || fallbackDynamicId);
         if (!Number.isInteger(profileId) || profileId <= 0) {
-          throw new Error('Select a valid active Dynamic profile ID to update.');
+          throw new Error(
+            'Select a valid active Dynamic profile ID to update.',
+          );
         }
 
         const { startPeriod, ...scheduleUpdate } = period;
@@ -502,7 +541,9 @@ export const ChargingStationSmartChargingPanel = ({
         );
 
         if (!ocppResponseSuccessCheck(response.data)) {
-          throw new Error('Charging station rejected UpdateDynamicSchedule request.');
+          throw new Error(
+            'Charging station rejected UpdateDynamicSchedule request.',
+          );
         }
 
         showSuccess(`Updated dynamic profile ${profileId}.`);
@@ -510,7 +551,8 @@ export const ChargingStationSmartChargingPanel = ({
         return;
       }
 
-      const generatedProfileId = parseOptionalNumber(profileIdInput) ?? generateProfileId();
+      const generatedProfileId =
+        parseOptionalNumber(profileIdInput) ?? generateProfileId();
       const stackLevel = parseOptionalNumber(stackLevelInput) ?? 0;
       if (!Number.isInteger(generatedProfileId) || generatedProfileId <= 0) {
         throw new Error('Profile ID must be a positive integer.');
@@ -519,7 +561,9 @@ export const ChargingStationSmartChargingPanel = ({
         throw new Error('Stack level must be zero or greater.');
       }
       if (profilePurpose === 'TxProfile' && !transactionIdInput.trim()) {
-        throw new Error('Transaction ID is required when purpose is TxProfile.');
+        throw new Error(
+          'Transaction ID is required when purpose is TxProfile.',
+        );
       }
 
       const startSchedule =
@@ -553,7 +597,9 @@ export const ChargingStationSmartChargingPanel = ({
       );
 
       if (!ocppResponseSuccessCheck(setResponse.data)) {
-        throw new Error('Charging station rejected SetChargingProfile request.');
+        throw new Error(
+          'Charging station rejected SetChargingProfile request.',
+        );
       }
 
       if (profileKind === 'Dynamic') {
@@ -629,8 +675,12 @@ export const ChargingStationSmartChargingPanel = ({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="dynamicUpdate">Update active Dynamic profile</SelectItem>
-              <SelectItem value="setProfile">Create and apply profile</SelectItem>
+              <SelectItem value="dynamicUpdate">
+                Update active Dynamic profile
+              </SelectItem>
+              <SelectItem value="setProfile">
+                Create and apply profile
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -683,7 +733,9 @@ export const ChargingStationSmartChargingPanel = ({
           <Label>Profile Purpose</Label>
           <Select
             value={profilePurpose}
-            onValueChange={(value) => setProfilePurpose(value as ProfilePurpose)}
+            onValueChange={(value) =>
+              setProfilePurpose(value as ProfilePurpose)
+            }
           >
             <SelectTrigger>
               <SelectValue />
@@ -774,13 +826,17 @@ export const ChargingStationSmartChargingPanel = ({
                 <div className="flex gap-2">
                   <Input
                     value={transactionIdInput}
-                    onChange={(event) => setTransactionIdInput(event.target.value)}
+                    onChange={(event) =>
+                      setTransactionIdInput(event.target.value)
+                    }
                     placeholder="Required for TxProfile"
                   />
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => setTransactionIdInput(suggestedTransactionId)}
+                    onClick={() =>
+                      setTransactionIdInput(suggestedTransactionId)
+                    }
                     disabled={!suggestedTransactionId}
                   >
                     Use current
@@ -799,7 +855,9 @@ export const ChargingStationSmartChargingPanel = ({
                 <Label>Start Schedule (ISO date-time)</Label>
                 <Input
                   value={startScheduleInput}
-                  onChange={(event) => setStartScheduleInput(event.target.value)}
+                  onChange={(event) =>
+                    setStartScheduleInput(event.target.value)
+                  }
                   placeholder="Leave blank to use current time"
                 />
               </div>
@@ -821,7 +879,7 @@ export const ChargingStationSmartChargingPanel = ({
           />
         </div>
 
-        {(setpointRequired || operationMode === 'ExternalLimits') ? (
+        {setpointRequired || operationMode === 'ExternalLimits' ? (
           <div className="space-y-2">
             <Label>
               Setpoint (W)
@@ -857,7 +915,10 @@ export const ChargingStationSmartChargingPanel = ({
             ? 'Loading latest telemetry from OCPP logs...'
             : 'Telemetry values are parsed from the most recent TransactionEvent and MeterValues logs.'}
         </p>
-        <Button onClick={() => void submitControl()} disabled={submitting || !isOcpp21}>
+        <Button
+          onClick={() => void submitControl()}
+          disabled={submitting || !isOcpp21}
+        >
           {submitting ? 'Sending...' : 'Send control command'}
         </Button>
       </div>

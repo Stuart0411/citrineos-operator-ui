@@ -12,13 +12,6 @@ import { MeasurandEnum, OCPP2_0_1 } from '@citrineos/base';
 export class MeterValueClass implements Partial<MeterValueDto> {}
 
 // todo share below code with @citrineos/base
-const TWO_HOURS = 60 * 60 * 2;
-
-const validContexts = new Set([
-  OCPP2_0_1.ReadingContextEnumType.Transaction_Begin,
-  OCPP2_0_1.ReadingContextEnumType.Sample_Periodic,
-  OCPP2_0_1.ReadingContextEnumType.Transaction_End,
-]);
 
 export const getTimestampToMeasurandArray = (
   sortedMeterValues: MeterValueDto[],
@@ -46,13 +39,6 @@ export const getTimestampToMeasurandArray = (
       if (overallValue) {
         const timestampEpoch = new Date(meterValue.timestamp).getTime();
         const elapsedTime = (timestampEpoch - baseTime) / 1000;
-        if (elapsedTime > TWO_HOURS) {
-          // skip weird data // todo is needed?
-          console.warn(
-            `Skipping data for ${elapsedTime} seconds, more than 2 hours from base time`,
-          );
-          continue;
-        }
         const normalizedValue = normalizeValue(overallValue);
         if (normalizedValue !== null) {
           result.push([elapsedTime, normalizedValue]);

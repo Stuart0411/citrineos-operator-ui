@@ -33,11 +33,7 @@ import { ChartsWrapper } from '@lib/client/pages/transactions/chart/charts.wrapp
 import { MultiSelect } from '@lib/client/components/multi-select';
 import { pageFlex } from '@lib/client/styles/page';
 
-const allContexts = [
-  OCPP2_0_1.ReadingContextEnumType.Transaction_Begin,
-  OCPP2_0_1.ReadingContextEnumType.Sample_Periodic,
-  OCPP2_0_1.ReadingContextEnumType.Transaction_End,
-];
+const allContexts = Object.values(OCPP2_0_1.ReadingContextEnumType);
 
 const filterByDate = (
   series: MeterValueDto[],
@@ -55,7 +51,9 @@ const filterByDate = (
   });
 };
 
-export const AggregatedMeterValuesData: FC<{ stationId?: string }> = ({ stationId }) => {
+export const AggregatedMeterValuesData: FC<{ stationId?: string }> = ({
+  stationId,
+}) => {
   const {
     query: { data: txData, isLoading: txLoading },
   } = useList<TransactionDto>({
@@ -74,7 +72,13 @@ export const AggregatedMeterValuesData: FC<{ stationId?: string }> = ({ stationI
       enabled: Boolean(stationId),
     },
   });
-  const txIds = useMemo(() => txData?.data.map((tx) => tx.id) ?? [], [txData]);
+  const txIds = useMemo(
+    () =>
+      (txData?.data ?? [])
+        .map((tx) => Number(tx.id))
+        .filter((id) => Number.isInteger(id) && id > 0),
+    [txData],
+  );
 
   const {
     query: { data: mvData, isLoading: mvLoading },
@@ -84,7 +88,10 @@ export const AggregatedMeterValuesData: FC<{ stationId?: string }> = ({ stationI
       gqlQuery: GET_METER_VALUES_FOR_STATION,
       gqlVariables: { transactionDatabaseIds: txIds, limit: 10000, offset: 0 },
     },
-    queryOptions: getPlainToInstanceOptions(MeterValueClass),
+    queryOptions: {
+      ...getPlainToInstanceOptions(MeterValueClass),
+      enabled: txIds.length > 0,
+    },
   });
   const defaultRange: DateRange = {
     from: startOfDay(subDays(new Date(), 7)),
