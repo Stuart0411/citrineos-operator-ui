@@ -119,6 +119,49 @@ const normalizeSignedChargingRateKw = (sample: Record<string, any>): number | un
   return normalizedKw;
 };
 
+const getPowerSamplePriority = (sample: Record<string, any>): number => {
+  const measurand = String(sample?.measurand ?? '').toLowerCase();
+  if (measurand.includes('import')) {
+    return 3;
+  }
+  if (measurand.includes('export')) {
+    return 1;
+  }
+  if (measurand.startsWith('power.active') || measurand.startsWith('power')) {
+    return 2;
+  }
+  return 0;
+};
+
+const selectPreferredPowerSample = (
+  sampledValues: Array<Record<string, any>>,
+): Record<string, any> | undefined => {
+  const powerSamples = sampledValues.filter((sample) => {
+    const measurand = String(sample?.measurand ?? '').toLowerCase();
+    return (
+      measurand === 'power.active.import' ||
+      measurand === 'power.active.export' ||
+      measurand.startsWith('power.active') ||
+      measurand.startsWith('power')
+    );
+  });
+
+  if (powerSamples.length === 0) {
+    return undefined;
+  }
+
+  return powerSamples.sort((left, right) => {
+    const priorityDiff = getPowerSamplePriority(right) - getPowerSamplePriority(left);
+    if (priorityDiff !== 0) {
+      return priorityDiff;
+    }
+
+    const leftValue = Math.abs(Number(left?.value ?? 0));
+    const rightValue = Math.abs(Number(right?.value ?? 0));
+    return rightValue - leftValue;
+  })[0];
+};
+
 const extractPayload = (rawMessage: unknown): any => {
   if (Array.isArray(rawMessage)) {
     const messageTypeId = rawMessage[0];
@@ -192,15 +235,7 @@ const extractTelemetrySnapshot = (rows: Array<Pick<OCPPMessageDto, 'message' | '
     }
 
     if (snapshot.chargingRateKw === undefined) {
-      const powerSample = sampledValues.find((sample) => {
-        const measurand = String(sample?.measurand ?? '').toLowerCase();
-        return (
-          measurand === 'power.active.import' ||
-          measurand === 'power.active.export' ||
-          measurand.startsWith('power.active') ||
-          measurand.startsWith('power')
-        );
-      });
+      const powerSample = selectPreferredPowerSample(sampledValues);
       if (powerSample) {
         const signedRateKw = normalizeSignedChargingRateKw(powerSample);
         if (signedRateKw !== undefined) {
