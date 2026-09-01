@@ -55,7 +55,7 @@ const filterByDate = (
   });
 };
 
-export const AggregatedMeterValuesData: FC<{ id: number }> = ({ id }) => {
+export const AggregatedMeterValuesData: FC<{ stationId?: string }> = ({ stationId }) => {
   const {
     query: { data: txData, isLoading: txLoading },
   } = useList<TransactionDto>({
@@ -63,13 +63,16 @@ export const AggregatedMeterValuesData: FC<{ id: number }> = ({ id }) => {
     meta: {
       gqlQuery: GET_TRANSACTION_LIST_FOR_STATION,
       gqlVariables: {
-        stationId: String(id),
+        stationId,
         limit: 10000,
         offset: 0,
         order_by: { createdAt: 'asc' },
       },
     },
-    queryOptions: getPlainToInstanceOptions(TransactionClass),
+    queryOptions: {
+      ...getPlainToInstanceOptions(TransactionClass),
+      enabled: Boolean(stationId),
+    },
   });
   const txIds = useMemo(() => txData?.data.map((tx) => tx.id) ?? [], [txData]);
 

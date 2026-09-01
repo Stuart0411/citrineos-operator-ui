@@ -184,9 +184,12 @@ export const ChargingStationDetailTabsCard = ({
                   sorters: DEFAULT_SORTERS,
                   meta: {
                     gqlQuery: GET_TRANSACTION_LIST_FOR_STATION,
-                    gqlVariables: { stationId: String(id) },
+                    gqlVariables: { stationId },
                   },
-                  queryOptions: getPlainToInstanceOptions(TransactionClass),
+                  queryOptions: {
+                    ...getPlainToInstanceOptions(TransactionClass),
+                    enabled: Boolean(stationId),
+                  },
                 }}
                 enableSorting
                 enableFilters
@@ -202,7 +205,7 @@ export const ChargingStationDetailTabsCard = ({
             value={ChargingStationDetailTabType.aggregated}
             className={cardTabsStyle}
           >
-            <AggregatedMeterValuesData id={id} />
+            <AggregatedMeterValuesData stationId={stationId} />
           </TabsContent>
 
           <TabsContent

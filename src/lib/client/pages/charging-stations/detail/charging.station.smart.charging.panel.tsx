@@ -212,6 +212,7 @@ const collectSampledValues = (payload: any): Array<Record<string, any>> => {
 
 const extractTelemetrySnapshot = (rows: Array<Pick<OCPPMessageDto, 'message' | 'timestamp' | 'action'>>): TelemetrySnapshot => {
   const snapshot: TelemetrySnapshot = {};
+  let selectedPowerSamplePriority = -1;
 
   for (const row of rows) {
     const payload = extractPayload(row.message);
@@ -234,17 +235,18 @@ const extractTelemetrySnapshot = (rows: Array<Pick<OCPPMessageDto, 'message' | '
       }
     }
 
-    if (snapshot.chargingRateKw === undefined) {
-      const powerSample = selectPreferredPowerSample(sampledValues);
-      if (powerSample) {
-        const signedRateKw = normalizeSignedChargingRateKw(powerSample);
-        if (signedRateKw !== undefined) {
-          snapshot.chargingRateKw = signedRateKw;
-        }
-        if (!snapshot.observedAt) {
-          snapshot.observedAt = row.timestamp;
-          snapshot.sourceAction = row.action;
-        }
+    const powerSample = selectPreferredPowerSample(sampledValues);
+    if (powerSample) {
+      const signedRateKw = normalizeSignedChargingRateKw(powerSample);
+      const samplePriority = getPowerSamplePriority(powerSample);
+      if (
+        signedRateKw !== undefined &&
+        (snapshot.chargingRateKw === undefined || samplePriority > selectedPowerSamplePriority)
+      ) {
+        snapshot.chargingRateKw = signedRateKw;
+        selectedPowerSamplePriority = samplePriority;
+        snapshot.observedAt = row.timestamp;
+        snapshot.sourceAction = row.action;
       }
     }
 
