@@ -95,3 +95,84 @@ export const GET_TRANSACTION_EVENTS_FOR_TRANSACTION_LIST_QUERY = gql`
     }
   }
 `;
+
+export const GET_TRANSACTION_EVENTS_WITH_METER_VALUES_FOR_STATION = gql`
+  query GetTransactionEventsWithMeterValuesForStation(
+    $transactionDatabaseIds: [Int!]!
+    $where: TransactionEvents_bool_exp! = {}
+    $order_by: [TransactionEvents_order_by!] = { timestamp: asc }
+    $offset: Int
+    $limit: Int
+  ) {
+    TransactionEvents(
+      where: {
+        _and: [
+          { transactionDatabaseId: { _in: $transactionDatabaseIds } }
+          $where
+        ]
+      }
+      order_by: $order_by
+      offset: $offset
+      limit: $limit
+    ) {
+      id
+      transactionDatabaseId
+      timestamp
+      MeterValues(order_by: { timestamp: asc }) {
+        id
+        transactionDatabaseId
+        transactionEventId
+        sampledValue
+        timestamp
+      }
+    }
+    TransactionEvents_aggregate(
+      where: {
+        _and: [
+          { transactionDatabaseId: { _in: $transactionDatabaseIds } }
+          $where
+        ]
+      }
+    ) {
+      aggregate {
+        count
+      }
+    }
+  }
+`;
+
+export const GET_TRANSACTION_EVENTS_WITH_METER_VALUES_BY_STATION_ID = gql`
+  query GetTransactionEventsWithMeterValuesByStationId(
+    $stationId: String!
+    $where: TransactionEvents_bool_exp! = {}
+    $order_by: [TransactionEvents_order_by!] = { timestamp: asc }
+    $offset: Int
+    $limit: Int
+  ) {
+    TransactionEvents(
+      where: { stationId: { _eq: $stationId }, _and: [$where] }
+      order_by: $order_by
+      offset: $offset
+      limit: $limit
+    ) {
+      id
+      stationId
+      transactionDatabaseId
+      timestamp
+      MeterValues(order_by: { timestamp: asc }) {
+        id
+        transactionDatabaseId
+        transactionEventId
+        sampledValue
+        timestamp
+      }
+    }
+    TransactionEvents_aggregate(
+      where: { stationId: { _eq: $stationId }, _and: [$where] }
+    ) {
+      aggregate {
+        count
+      }
+    }
+  }
+`;
