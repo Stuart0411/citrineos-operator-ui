@@ -6,14 +6,12 @@
 import {
   type MeterValueDto,
   OCPP2_0_1,
-  type TransactionDto,
+  type TransactionEventDto,
 } from '@citrineos/base';
 import { RangePicker } from '@lib/client/components/range-picker';
 import { LoadingIcon } from '@lib/client/components/ui/loading';
-import { MeterValueClass } from '@lib/cls/meter.value.dto';
-import { TransactionClass } from '@lib/cls/transaction.dto';
-import { GET_METER_VALUES_FOR_STATION } from '@lib/queries/meter.values';
-import { GET_TRANSACTION_LIST_FOR_STATION } from '@lib/queries/transactions';
+import { TransactionEventClass } from '@lib/cls/transaction.event.dto';
+import { GET_TRANSACTION_EVENTS_WITH_METER_VALUES_BY_STATION_ID } from '@lib/queries/transaction.events';
 import { ResourceType } from '@lib/utils/access.types';
 import { getPlainToInstanceOptions } from '@lib/utils/tables';
 import { useList } from '@refinedev/core';
@@ -33,11 +31,7 @@ import { ChartsWrapper } from '@lib/client/pages/transactions/chart/charts.wrapp
 import { MultiSelect } from '@lib/client/components/multi-select';
 import { pageFlex } from '@lib/client/styles/page';
 
-const allContexts = [
-  OCPP2_0_1.ReadingContextEnumType.Transaction_Begin,
-  OCPP2_0_1.ReadingContextEnumType.Sample_Periodic,
-  OCPP2_0_1.ReadingContextEnumType.Transaction_End,
-];
+const allContexts = Object.values(OCPP2_0_1.ReadingContextEnumType);
 
 const filterByDate = (
   series: MeterValueDto[],
@@ -55,51 +49,84 @@ const filterByDate = (
   });
 };
 
-export const AggregatedMeterValuesData: FC<{ id: number }> = ({ id }) => {
-  const {
-    query: { data: txData, isLoading: txLoading },
-  } = useList<TransactionDto>({
-    resource: ResourceType.TRANSACTIONS,
-    meta: {
-      gqlQuery: GET_TRANSACTION_LIST_FOR_STATION,
-      gqlVariables: {
-        stationId: id,
-        limit: 10000,
-        offset: 0,
-        order_by: { createdAt: 'asc' },
-      },
-    },
-    queryOptions: getPlainToInstanceOptions(TransactionClass),
-  });
-  const txIds = useMemo(() => txData?.data.map((tx) => tx.id) ?? [], [txData]);
-
-  const {
-    query: { data: mvData, isLoading: mvLoading },
-  } = useList<MeterValueDto>({
-    resource: ResourceType.METER_VALUES,
-    meta: {
-      gqlQuery: GET_METER_VALUES_FOR_STATION,
-      gqlVariables: { transactionDatabaseIds: txIds, limit: 10000, offset: 0 },
-    },
-    queryOptions: getPlainToInstanceOptions(MeterValueClass),
-  });
+export const AggregatedMeterValuesData: FC<{ stationId?: string }> = ({
+  stationId,
+}) => {
   const defaultRange: DateRange = {
     from: startOfDay(subDays(new Date(), 7)),
     to: endOfDay(new Date()),
   };
-
   const [dateRange, setDateRange] = useState(defaultRange);
   const [validContexts, setValidContexts] =
     useState<OCPP2_0_1.ReadingContextEnumType[]>(allContexts);
 
-  if (txLoading || mvLoading)
+  const transactionEventWhere = useMemo(() => {
+    if (!dateRange.from || !dateRange.to) {
+      return {};
+    }
+
+    return {
+      timestamp: {
+        _gte: dateRange.from.toISOString(),
+        _lte: dateRange.to.toISOString(),
+      },
+    };
+  }, [dateRange.from, dateRange.to]);
+
+  const {
+    query: { data: teData, isLoading: teLoading, error: teError },
+  } = useList<TransactionEventDto>({
+    resource: ResourceType.TRANSACTION_EVENTS,
+    meta: {
+      gqlQuery: GET_TRANSACTION_EVENTS_WITH_METER_VALUES_BY_STATION_ID,
+      gqlVariables: {
+        stationId,
+        where: transactionEventWhere,
+        order_by: { timestamp: 'desc' },
+        limit: 50000,
+        offset: 0,
+      },
+    },
+    queryOptions: {
+      ...getPlainToInstanceOptions(TransactionEventClass),
+      enabled: Boolean(stationId),
+    },
+  });
+
+  const meterValues = useMemo<MeterValueDto[]>(() => {
+    const flattened: MeterValueDto[] = [];
+    for (const eventRow of teData?.data ?? []) {
+      const nestedMeterValues =
+        ((eventRow as any)?.MeterValues as MeterValueDto[] | undefined) ??
+        ((eventRow as any)?.meterValues as MeterValueDto[] | undefined) ??
+        [];
+
+      flattened.push(...nestedMeterValues);
+    }
+
+    return flattened.sort(
+      (left, right) =>
+        new Date(left.timestamp).getTime() -
+        new Date(right.timestamp).getTime(),
+    );
+  }, [teData?.data]);
+
+  if (teLoading)
     return (
       <div className="flex justify-center p-8">
         <LoadingIcon />
       </div>
     );
 
-  const data = filterByDate(mvData?.data ?? [], dateRange);
+  if (teError) {
+    return (
+      <div className="rounded-md border border-destructive/50 bg-destructive/5 p-3 text-sm text-destructive">
+        Failed to load aggregated meter values.
+      </div>
+    );
+  }
+
+  const data = filterByDate(meterValues, dateRange);
 
   return (
     <div className={pageFlex}>

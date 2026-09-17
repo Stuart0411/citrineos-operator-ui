@@ -31,7 +31,7 @@ import { type LogicalFilter, useTranslate } from '@refinedev/core';
 import { useList } from '@refinedev/core';
 import { Copy, Download, Link } from 'lucide-react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { CollapsibleOCPPMessageViewer } from './collapsible.ocpp.message.viewer';
+import { CollapsibleOCPPMessageViewer, OCPPMessageDetailSheet } from './collapsible.ocpp.message.viewer';
 import { buttonIconSize } from '@lib/client/styles/icon';
 import { TimestampDisplay } from '@lib/client/components/timestamp-display';
 import { Table } from '@lib/client/components/table';
@@ -85,6 +85,7 @@ export const OCPPMessages: React.FC<OCPPMessagesProps> = ({
   const [selectedOrigin, setSelectedOrigin] = useState<string>(allOption);
   const [filters, setFilters] = useState<LogicalFilter[]>([]);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [selectedMessage, setSelectedMessage] = useState<OCPPMessageDto | null>(null);
 
   const translate = useTranslate();
 
@@ -346,6 +347,7 @@ export const OCPPMessages: React.FC<OCPPMessagesProps> = ({
                   <CollapsibleOCPPMessageViewer
                     ocppMessageDto={row.original}
                     unparsed={typeof row.original.message === 'string'}
+                    onExpand={setSelectedMessage}
                   />
                 );
               }}
@@ -354,6 +356,11 @@ export const OCPPMessages: React.FC<OCPPMessagesProps> = ({
         </Table>
       </div>
 
+      <OCPPMessageDetailSheet
+        ocppMessageDto={selectedMessage}
+        open={selectedMessage !== null}
+        onOpenChange={(open) => { if (!open) setSelectedMessage(null); }}
+      />
       <OCPPMessagesExportDialog
         open={exportDialogOpen}
         onOpenChangeAction={setExportDialogOpen}

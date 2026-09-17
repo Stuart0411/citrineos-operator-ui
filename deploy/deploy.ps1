@@ -36,12 +36,12 @@ if ($LASTEXITCODE -ne 0) {
   throw "Failed to pull release image $fullImage. Verify the tag exists and run: docker pull $fullImage"
 }
 
-docker compose -f $composeFilePath up -d --remove-orphans
+docker compose -p citrine-ui -f $composeFilePath up -d --remove-orphans
 if ($LASTEXITCODE -ne 0) {
   throw 'Failed to start release stack'
 }
 
-$containerId = (docker compose -f $composeFilePath ps -q citrine-ui).Trim()
+$containerId = (docker compose -p citrine-ui -f $composeFilePath ps -q citrine-ui).Trim()
 if ([string]::IsNullOrWhiteSpace($containerId)) {
   throw 'Could not resolve running container id for citrine-ui'
 }

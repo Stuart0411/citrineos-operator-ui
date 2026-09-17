@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 'use client';
 
+import type { OCPPVersion } from '@citrineos/base';
 import { Card, CardContent } from '@lib/client/components/ui/card';
 import {
   Tabs,
@@ -35,6 +36,8 @@ import {
 import { cardTabsStyle } from '@lib/client/styles/card';
 import { useColumnPreferences } from '@lib/client/hooks/useColumnPreferences';
 import { useQueryState } from 'nuqs';
+import { ChargingStationOperationsTab } from './charging.station.operations.tab';
+import { ChargingStationActiveProfilesTab } from './charging.station.active.profiles.tab';
 
 enum ChargingStationDetailTabType {
   evses = 'evses',
@@ -42,14 +45,18 @@ enum ChargingStationDetailTabType {
   configuration = 'configuration',
   transactions = 'transactions',
   aggregated = 'aggregated',
+  operations = 'operations',
+  activeProfiles = 'activeProfiles',
 }
 
 export const ChargingStationDetailTabsCard = ({
   id,
   stationId,
+  protocol,
 }: {
   id: number;
   stationId?: string;
+  protocol?: OCPPVersion | null;
 }) => {
   const translate = useTranslate();
 
@@ -75,7 +82,7 @@ export const ChargingStationDetailTabsCard = ({
           }
           onValueChange={(selectedTab: string) => setTab(selectedTab)}
         >
-          <TabsList>
+          <TabsList className="w-full justify-start overflow-x-auto whitespace-nowrap">
             <TabsTrigger value={ChargingStationDetailTabType.evses}>
               EVSEs
             </TabsTrigger>
@@ -90,6 +97,12 @@ export const ChargingStationDetailTabsCard = ({
             </TabsTrigger>
             <TabsTrigger value={ChargingStationDetailTabType.aggregated}>
               Aggregated Meter Values Data
+            </TabsTrigger>
+            <TabsTrigger value={ChargingStationDetailTabType.operations}>
+              Operations
+            </TabsTrigger>
+            <TabsTrigger value={ChargingStationDetailTabType.activeProfiles}>
+              Active Profiles
             </TabsTrigger>
           </TabsList>
 
@@ -171,9 +184,12 @@ export const ChargingStationDetailTabsCard = ({
                   sorters: DEFAULT_SORTERS,
                   meta: {
                     gqlQuery: GET_TRANSACTION_LIST_FOR_STATION,
-                    gqlVariables: { stationId: id },
+                    gqlVariables: { stationId },
                   },
-                  queryOptions: getPlainToInstanceOptions(TransactionClass),
+                  queryOptions: {
+                    ...getPlainToInstanceOptions(TransactionClass),
+                    enabled: Boolean(stationId),
+                  },
                 }}
                 enableSorting
                 enableFilters
@@ -189,7 +205,24 @@ export const ChargingStationDetailTabsCard = ({
             value={ChargingStationDetailTabType.aggregated}
             className={cardTabsStyle}
           >
-            <AggregatedMeterValuesData id={id} />
+            <AggregatedMeterValuesData stationId={stationId} />
+          </TabsContent>
+
+          <TabsContent
+            value={ChargingStationDetailTabType.operations}
+            className={cardTabsStyle}
+          >
+            <ChargingStationOperationsTab id={id} />
+          </TabsContent>
+
+          <TabsContent
+            value={ChargingStationDetailTabType.activeProfiles}
+            className={cardTabsStyle}
+          >
+            <ChargingStationActiveProfilesTab
+              stationId={stationId}
+              protocol={protocol}
+            />
           </TabsContent>
         </Tabs>
       </CardContent>

@@ -21,7 +21,6 @@ export const SERVER_NETWORK_PROFILE_LIST_QUERY = gql`
       host
       port
       pingInterval
-      protocol
       messageTimeout
       securityProfile
       allowUnknownChargingStations
@@ -47,7 +46,6 @@ export const SERVER_NETWORK_PROFILE_GET_QUERY = gql`
       host
       port
       pingInterval
-      protocol
       messageTimeout
       securityProfile
       allowUnknownChargingStations

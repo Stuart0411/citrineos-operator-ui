@@ -33,8 +33,14 @@ import config from '@lib/utils/config';
 import { MenuSection } from '@lib/client/components/main-menu/main.menu';
 import { ChevronRight, RefreshCw, X, Zap } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useList } from '@refinedev/core';
+
+type EmsActiveTransaction = {
+  transactionId?: string | null;
+  evseId?: number | null;
+  isActive?: boolean | null;
+};
 
 type EmsSiteIntent = {
   siteId: string;
@@ -77,6 +83,7 @@ type EmsChargingPlanRequest = {
   siteId: string;
   stationIds: string[];
   evseId: number;
+  transactionId?: string;
   strategy: 'equal_share_online' | 'equal_share_all';
   chargingProfilePurpose:
     | 'ChargingStationExternalConstraints'
@@ -93,6 +100,7 @@ type EmsChargingPlanRequest = {
     | 'LocalFrequency'
     | 'LocalLoadBalancing'
     | 'Idle';
+  applicationPath: 'absolute' | 'dynamic';
 };
 
 type EmsStationOption = ChargingStationDto & {
@@ -141,6 +149,7 @@ type EmsAutoApplyConfig = {
   strategy: EmsChargingPlanRequest['strategy'];
   chargingProfilePurpose: EmsChargingPlanRequest['chargingProfilePurpose'];
   operationMode: EmsChargingPlanRequest['operationMode'];
+  applicationPath: EmsChargingPlanRequest['applicationPath'];
   enabled: boolean;
 };
 
@@ -242,9 +251,11 @@ export const EmsOperationsCard = ({
     siteId,
     stationIds: [],
     evseId: 1,
+    transactionId: '',
     strategy: 'equal_share_online',
     chargingProfilePurpose: 'ChargingStationExternalConstraints',
     operationMode: 'ExternalLimits',
+    applicationPath: 'absolute',
   });
   const [planAction, setPlanAction] = useState<EmsPlanAction | null>(null);
   const [planResponse, setPlanResponse] = useState<string | null>(null);
@@ -349,10 +360,6 @@ export const EmsOperationsCard = ({
     });
   }, [currentIntent?.siteId]);
 
-  if (loading) {
-    return <OverviewCardSkeleton />;
-  }
-
   const activeLimits = currentIntent?.constraints;
   const hasIntent = Boolean(currentIntent);
   const cardTitle =
@@ -398,6 +405,55 @@ export const EmsOperationsCard = ({
       [key]: value,
     }));
   };
+
+  const suggestedTxProfileTransaction = useMemo(() => {
+    for (const station of selectedStations) {
+      const transactions = Array.isArray((station as any).transactions)
+        ? ((station as any).transactions as EmsActiveTransaction[])
+        : [];
+
+      const evseMatched = transactions.find(
+        (transaction) =>
+          Number(transaction?.evseId) === Number(planRequest.evseId) &&
+          Boolean(transaction?.transactionId),
+      );
+      if (evseMatched?.transactionId) {
+        return {
+          stationId: toStationId(station) ?? 'unknown',
+          transactionId: String(evseMatched.transactionId),
+        };
+      }
+
+      const firstActive = transactions.find(
+        (transaction) => transaction.isActive !== false && transaction.transactionId,
+      );
+      if (firstActive?.transactionId) {
+        return {
+          stationId: toStationId(station) ?? 'unknown',
+          transactionId: String(firstActive.transactionId),
+        };
+      }
+    }
+
+    return null;
+  }, [selectedStations, planRequest.evseId]);
+
+  useEffect(() => {
+    if (planRequest.chargingProfilePurpose !== 'TxProfile') {
+      return;
+    }
+
+    if (!planRequest.transactionId?.trim() && suggestedTxProfileTransaction?.transactionId) {
+      setPlanRequest((current) => ({
+        ...current,
+        transactionId: suggestedTxProfileTransaction.transactionId,
+      }));
+    }
+  }, [
+    planRequest.chargingProfilePurpose,
+    planRequest.transactionId,
+    suggestedTxProfileTransaction,
+  ]);
 
   const parseStationIds = (value: string) =>
     value
@@ -605,6 +661,7 @@ export const EmsOperationsCard = ({
         strategy: planRequest.strategy,
         chargingProfilePurpose: planRequest.chargingProfilePurpose,
         operationMode: planRequest.operationMode,
+        applicationPath: planRequest.applicationPath,
         enabled,
       };
       const saved = await client.postRaw<EmsAutoApplyConfig>(
@@ -662,11 +719,24 @@ export const EmsOperationsCard = ({
       ...planRequest,
       siteId: trimmedSiteId,
       stationIds,
+      transactionId:
+        planRequest.chargingProfilePurpose === 'TxProfile'
+          ? (planRequest.transactionId ?? '').trim()
+          : undefined,
       evseId:
         Number.isFinite(planRequest.evseId) && planRequest.evseId > 0
           ? planRequest.evseId
           : 1,
     };
+
+    if (
+      requestBody.chargingProfilePurpose === 'TxProfile' &&
+      !requestBody.transactionId
+    ) {
+      setPlanError('Transaction ID is required for TxProfile.');
+      setPlanAction(null);
+      return;
+    }
 
     try {
       if (intentOverride.enabled) {
@@ -691,6 +761,10 @@ export const EmsOperationsCard = ({
       setPlanAction(null);
     }
   };
+
+  if (loading) {
+    return <OverviewCardSkeleton />;
+  }
 
   return (
     <Card className="flex h-full min-h-[36rem] max-h-[75vh] flex-col overflow-hidden border-border/70 bg-card/80 shadow-sm backdrop-blur-sm">
@@ -850,10 +924,6 @@ export const EmsOperationsCard = ({
                         ))}
                       </div>
                     ) : null}
-                    <p className="text-xs text-muted-foreground">
-                      Add one or more stations here. The backend applies the
-                      plan only to the station ids included in the request body.
-                    </p>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="ems-site-id">Site id</Label>
@@ -903,11 +973,6 @@ export const EmsOperationsCard = ({
                         }
                       />
                     )}
-                    <p className="text-xs text-muted-foreground">
-                      EVSE id is the charger port number. When the selected
-                      stations share common EVSE ids, this becomes a dropdown
-                      sourced from those stations.
-                    </p>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="ems-strategy">Strategy</Label>
@@ -950,25 +1015,46 @@ export const EmsOperationsCard = ({
                         <SelectValue placeholder="Select profile purpose" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="ChargingStationExternalConstraints">
-                          ChargingStationExternalConstraints (EMS/grid)
-                        </SelectItem>
-                        <SelectItem value="ChargingStationMaxProfile">
-                          ChargingStationMaxProfile (hardware ceiling)
-                        </SelectItem>
-                        <SelectItem value="PriorityCharging">
-                          PriorityCharging
-                        </SelectItem>
-                        <SelectItem value="LocalGeneration">
-                          LocalGeneration
-                        </SelectItem>
-                        <SelectItem value="TxDefaultProfile">
-                          TxDefaultProfile
-                        </SelectItem>
+                        <SelectItem value="ChargingStationExternalConstraints">ChargingStationExternalConstraints</SelectItem>
+                        <SelectItem value="ChargingStationMaxProfile">ChargingStationMaxProfile</SelectItem>
+                        <SelectItem value="TxDefaultProfile">TxDefaultProfile</SelectItem>
                         <SelectItem value="TxProfile">TxProfile</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
+                  {planRequest.chargingProfilePurpose === 'TxProfile' ? (
+                    <div className="space-y-2 md:col-span-2">
+                      <Label htmlFor="ems-transaction-id">Transaction ID</Label>
+                      <div className="flex gap-2">
+                        <Input
+                          id="ems-transaction-id"
+                          value={planRequest.transactionId ?? ''}
+                          onChange={(event) =>
+                            setPlanField('transactionId', event.target.value)
+                          }
+                          placeholder="Required for TxProfile"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() =>
+                            setPlanField(
+                              'transactionId',
+                              suggestedTxProfileTransaction?.transactionId ?? '',
+                            )
+                          }
+                          disabled={!suggestedTxProfileTransaction?.transactionId}
+                        >
+                          Use current
+                        </Button>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {suggestedTxProfileTransaction?.transactionId
+                          ? `Detected current transaction ${suggestedTxProfileTransaction.transactionId} on station ${suggestedTxProfileTransaction.stationId}.`
+                          : 'No active transaction detected on selected stations. Enter transaction ID manually.'}
+                      </p>
+                    </div>
+                  ) : null}
                   <div className="space-y-2">
                     <Label htmlFor="ems-mode">Operation mode</Label>
                     <Select
@@ -1009,6 +1095,29 @@ export const EmsOperationsCard = ({
                   <div className="space-y-2 md:col-span-2 rounded-lg border border-border/60 bg-card/60 p-4">
                     <div className="flex items-center justify-between gap-3">
                       <div>
+                        <p className="text-sm font-medium">Application path</p>
+                        <p className="text-xs text-muted-foreground">
+                          Absolute sends SetChargingProfile. Dynamic sends UpdateDynamicSchedule on OCPP 2.1 stations with an active Dynamic profile.
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs text-muted-foreground">Absolute</span>
+                        <Switch
+                          checked={planRequest.applicationPath === 'dynamic'}
+                          onCheckedChange={(checked) =>
+                            setPlanField(
+                              'applicationPath',
+                              checked ? 'dynamic' : 'absolute',
+                            )
+                          }
+                        />
+                        <span className="text-xs text-muted-foreground">Dynamic</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-2 md:col-span-2 rounded-lg border border-border/60 bg-card/60 p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
                         <p className="text-sm font-medium">
                           Intent override (no MQTT required)
                         </p>
@@ -1031,30 +1140,19 @@ export const EmsOperationsCard = ({
                     <div className="mt-4 grid gap-4 md:grid-cols-2">
                       <div className="space-y-2">
                         <div className="flex items-center justify-between gap-3">
-                          <Label htmlFor="ems-allow-discharge-toggle">
-                            Allow discharging
-                          </Label>
+                          <Label htmlFor="ems-allow-discharge-toggle">Allow discharging</Label>
                           <Switch
                             id="ems-allow-discharge-toggle"
                             checked={intentOverride.allowDischarge}
                             onCheckedChange={(checked) =>
-                              setIntentOverride((current) => ({
-                                ...current,
-                                allowDischarge: checked,
-                              }))
+                              setIntentOverride((current) => ({ ...current, allowDischarge: checked }))
                             }
                             disabled={!intentOverride.enabled}
                           />
                         </div>
-                        <p className="text-xs text-muted-foreground">
-                          Sets intent flags.allowDischarge for the override
-                          intent.
-                        </p>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="ems-discharge-budget">
-                          Discharge budget W
-                        </Label>
+                        <Label htmlFor="ems-discharge-budget">Discharge budget W</Label>
                         <Input
                           id="ems-discharge-budget"
                           type="number"
@@ -1062,73 +1160,13 @@ export const EmsOperationsCard = ({
                           placeholder="e.g. 3000"
                           value={intentOverride.dischargeBudgetW}
                           onChange={(event) =>
-                            setIntentOverride((current) => ({
-                              ...current,
-                              dischargeBudgetW: event.target.value,
-                            }))
+                            setIntentOverride((current) => ({ ...current, dischargeBudgetW: event.target.value }))
                           }
-                          disabled={
-                            !intentOverride.enabled ||
-                            !intentOverride.allowDischarge
-                          }
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between gap-3">
-                          <Label htmlFor="ems-centralsetpoint-budget-toggle">
-                            Use CentralSetpoint discharge limit as budget
-                          </Label>
-                          <Switch
-                            id="ems-centralsetpoint-budget-toggle"
-                            checked={
-                              intentOverride.useCentralSetpointDischargeAsBudget
-                            }
-                            onCheckedChange={(checked) =>
-                              setIntentOverride((current) => ({
-                                ...current,
-                                useCentralSetpointDischargeAsBudget: checked,
-                              }))
-                            }
-                            disabled={
-                              !intentOverride.enabled ||
-                              !intentOverride.allowDischarge
-                            }
-                          />
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          If Discharge budget W is blank and mode is
-                          CentralSetpoint, this value is used as
-                          evDischargeBudgetW.
-                        </p>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="ems-centralsetpoint-discharge-limit">
-                          CentralSetpoint discharge limit W
-                        </Label>
-                        <Input
-                          id="ems-centralsetpoint-discharge-limit"
-                          type="number"
-                          min={0}
-                          placeholder="e.g. 2500"
-                          value={intentOverride.centralSetpointDischargeLimitW}
-                          onChange={(event) =>
-                            setIntentOverride((current) => ({
-                              ...current,
-                              centralSetpointDischargeLimitW:
-                                event.target.value,
-                            }))
-                          }
-                          disabled={
-                            !intentOverride.enabled ||
-                            !intentOverride.allowDischarge ||
-                            !intentOverride.useCentralSetpointDischargeAsBudget
-                          }
+                          disabled={!intentOverride.enabled || !intentOverride.allowDischarge}
                         />
                       </div>
                       <div className="space-y-2 md:col-span-2">
-                        <Label htmlFor="ems-intent-ttl">
-                          Intent TTL seconds
-                        </Label>
+                        <Label htmlFor="ems-intent-ttl">Intent TTL seconds</Label>
                         <Input
                           id="ems-intent-ttl"
                           type="number"
@@ -1144,25 +1182,6 @@ export const EmsOperationsCard = ({
                         />
                       </div>
                     </div>
-                  </div>
-                  <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="ems-station-ids">Station ids</Label>
-                    <Textarea
-                      id="ems-station-ids"
-                      value={planRequest.stationIds.join('\n')}
-                      onChange={(event) =>
-                        setPlanField(
-                          'stationIds',
-                          parseStationIds(event.target.value),
-                        )
-                      }
-                      placeholder="nexus-1\nnexus-2"
-                      className="min-h-24"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Advanced override. You can still edit the final station id
-                      list directly.
-                    </p>
                   </div>
                 </div>
 
@@ -1204,6 +1223,7 @@ export const EmsOperationsCard = ({
                       <p className="text-xs text-muted-foreground">
                         {autoApplyConfig.chargingProfilePurpose} ·{' '}
                         {autoApplyConfig.operationMode} · EVSE{' '}
+                        {autoApplyConfig.applicationPath === 'dynamic' ? 'dynamic path' : 'absolute path'} ·{' '}
                         {autoApplyConfig.evseId} ·{' '}
                         {autoApplyConfig.enabled ? 'active' : 'paused'}
                       </p>
@@ -1251,40 +1271,24 @@ export const EmsOperationsCard = ({
                 </div>
 
                 <div className="mt-4 rounded-xl border border-border/60 bg-card/70 p-4">
-                  <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
-                    EMS charging plan request body
-                  </p>
-                  <p className="mt-2 text-xs text-muted-foreground">
-                    This request does not carry `dischargeLimit`. The backend
-                    derives discharge behavior from the active site intent plus
-                    station energy transfer policy, then injects
-                    `dischargeLimit` only into the downstream OCPP payload when
-                    export is enabled and a discharge budget is available.
-                  </p>
-                  <pre className="mt-3 overflow-x-auto text-xs leading-6 text-muted-foreground">
-                    {JSON.stringify(
-                      {
-                        ...planRequest,
-                        siteId: planRequest.siteId.trim() || siteId,
-                        stationIds: planRequest.stationIds,
-                      },
-                      null,
-                      2,
-                    )}
-                  </pre>
+                  <button
+                    type="button"
+                    className="flex w-full items-center justify-between text-left"
+                    onClick={() => setPlanRequest((c) => ({ ...c, _showBody: !(c as any)._showBody } as any))}
+                  >
+                    <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">Request body</p>
+                    <ChevronRight className={`size-3 text-muted-foreground transition-transform ${(planRequest as any)._showBody ? 'rotate-90' : ''}`} />
+                  </button>
+                  {(planRequest as any)._showBody ? (
+                    <pre className="mt-3 overflow-x-auto text-xs leading-6 text-muted-foreground">
+                      {JSON.stringify({ ...planRequest, siteId: planRequest.siteId.trim() || siteId, stationIds: planRequest.stationIds }, null, 2)}
+                    </pre>
+                  ) : null}
                 </div>
 
                 {planResponsePayload?.results?.length ? (
                   <div className="mt-4 rounded-xl border border-border/60 bg-card/70 p-4">
-                    <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
-                      Apply result payloads
-                    </p>
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      For apply actions, inspect the emitted confirmation
-                      payload per station here. If `dischargeLimit` is active,
-                      it will appear in the downstream OCPP payload, not in the
-                      EMS request body above.
-                    </p>
+                    <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">Apply results</p>
                     <div className="mt-3 space-y-3">
                       {planResponsePayload.results.map((result) => (
                         <div
