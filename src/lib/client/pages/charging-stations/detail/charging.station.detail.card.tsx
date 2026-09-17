@@ -33,13 +33,7 @@ import {
   useOne,
   useTranslate,
 } from '@refinedev/core';
-import {
-  ChevronLeft,
-  Edit,
-  Info,
-  RefreshCw,
-  Trash2,
-} from 'lucide-react';
+import { ChevronLeft, Edit, Info, RefreshCw, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useCallback, useState } from 'react';
 import { useDispatch } from 'react-redux';

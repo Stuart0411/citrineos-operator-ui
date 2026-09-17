@@ -443,7 +443,10 @@ export const EmsOperationsCard = ({
       return;
     }
 
-    if (!planRequest.transactionId?.trim() && suggestedTxProfileTransaction?.transactionId) {
+    if (
+      !planRequest.transactionId?.trim() &&
+      suggestedTxProfileTransaction?.transactionId
+    ) {
       setPlanRequest((current) => ({
         ...current,
         transactionId: suggestedTxProfileTransaction.transactionId,
@@ -1015,9 +1018,15 @@ export const EmsOperationsCard = ({
                         <SelectValue placeholder="Select profile purpose" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="ChargingStationExternalConstraints">ChargingStationExternalConstraints</SelectItem>
-                        <SelectItem value="ChargingStationMaxProfile">ChargingStationMaxProfile</SelectItem>
-                        <SelectItem value="TxDefaultProfile">TxDefaultProfile</SelectItem>
+                        <SelectItem value="ChargingStationExternalConstraints">
+                          ChargingStationExternalConstraints
+                        </SelectItem>
+                        <SelectItem value="ChargingStationMaxProfile">
+                          ChargingStationMaxProfile
+                        </SelectItem>
+                        <SelectItem value="TxDefaultProfile">
+                          TxDefaultProfile
+                        </SelectItem>
                         <SelectItem value="TxProfile">TxProfile</SelectItem>
                       </SelectContent>
                     </Select>
@@ -1097,11 +1106,15 @@ export const EmsOperationsCard = ({
                       <div>
                         <p className="text-sm font-medium">Application path</p>
                         <p className="text-xs text-muted-foreground">
-                          Absolute sends SetChargingProfile. Dynamic sends UpdateDynamicSchedule on OCPP 2.1 stations with an active Dynamic profile.
+                          Absolute sends SetChargingProfile. Dynamic sends
+                          UpdateDynamicSchedule on OCPP 2.1 stations with an
+                          active Dynamic profile.
                         </p>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="text-xs text-muted-foreground">Absolute</span>
+                        <span className="text-xs text-muted-foreground">
+                          Absolute
+                        </span>
                         <Switch
                           checked={planRequest.applicationPath === 'dynamic'}
                           onCheckedChange={(checked) =>
@@ -1111,7 +1124,9 @@ export const EmsOperationsCard = ({
                             )
                           }
                         />
-                        <span className="text-xs text-muted-foreground">Dynamic</span>
+                        <span className="text-xs text-muted-foreground">
+                          Dynamic
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -1140,19 +1155,26 @@ export const EmsOperationsCard = ({
                     <div className="mt-4 grid gap-4 md:grid-cols-2">
                       <div className="space-y-2">
                         <div className="flex items-center justify-between gap-3">
-                          <Label htmlFor="ems-allow-discharge-toggle">Allow discharging</Label>
+                          <Label htmlFor="ems-allow-discharge-toggle">
+                            Allow discharging
+                          </Label>
                           <Switch
                             id="ems-allow-discharge-toggle"
                             checked={intentOverride.allowDischarge}
                             onCheckedChange={(checked) =>
-                              setIntentOverride((current) => ({ ...current, allowDischarge: checked }))
+                              setIntentOverride((current) => ({
+                                ...current,
+                                allowDischarge: checked,
+                              }))
                             }
                             disabled={!intentOverride.enabled}
                           />
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="ems-discharge-budget">Discharge budget W</Label>
+                        <Label htmlFor="ems-discharge-budget">
+                          Discharge budget W
+                        </Label>
                         <Input
                           id="ems-discharge-budget"
                           type="number"
@@ -1160,13 +1182,21 @@ export const EmsOperationsCard = ({
                           placeholder="e.g. 3000"
                           value={intentOverride.dischargeBudgetW}
                           onChange={(event) =>
-                            setIntentOverride((current) => ({ ...current, dischargeBudgetW: event.target.value }))
+                            setIntentOverride((current) => ({
+                              ...current,
+                              dischargeBudgetW: event.target.value,
+                            }))
                           }
-                          disabled={!intentOverride.enabled || !intentOverride.allowDischarge}
+                          disabled={
+                            !intentOverride.enabled ||
+                            !intentOverride.allowDischarge
+                          }
                         />
                       </div>
                       <div className="space-y-2 md:col-span-2">
-                        <Label htmlFor="ems-intent-ttl">Intent TTL seconds</Label>
+                        <Label htmlFor="ems-intent-ttl">
+                          Intent TTL seconds
+                        </Label>
                         <Input
                           id="ems-intent-ttl"
                           type="number"
@@ -1223,7 +1253,9 @@ export const EmsOperationsCard = ({
                       <p className="text-xs text-muted-foreground">
                         {autoApplyConfig.chargingProfilePurpose} ·{' '}
                         {autoApplyConfig.operationMode} · EVSE{' '}
-                        {autoApplyConfig.applicationPath === 'dynamic' ? 'dynamic path' : 'absolute path'} ·{' '}
+                        {autoApplyConfig.applicationPath === 'dynamic'
+                          ? 'dynamic path'
+                          : 'absolute path'} ·{' '}
                         {autoApplyConfig.evseId} ·{' '}
                         {autoApplyConfig.enabled ? 'active' : 'paused'}
                       </p>
@@ -1274,21 +1306,40 @@ export const EmsOperationsCard = ({
                   <button
                     type="button"
                     className="flex w-full items-center justify-between text-left"
-                    onClick={() => setPlanRequest((c) => ({ ...c, _showBody: !(c as any)._showBody } as any))}
+                    onClick={() =>
+                      setPlanRequest(
+                        (c) =>
+                          ({ ...c, _showBody: !(c as any)._showBody }) as any,
+                      )
+                    }
                   >
-                    <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">Request body</p>
-                    <ChevronRight className={`size-3 text-muted-foreground transition-transform ${(planRequest as any)._showBody ? 'rotate-90' : ''}`} />
+                    <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
+                      Request body
+                    </p>
+                    <ChevronRight
+                      className={`size-3 text-muted-foreground transition-transform ${(planRequest as any)._showBody ? 'rotate-90' : ''}`}
+                    />
                   </button>
                   {(planRequest as any)._showBody ? (
                     <pre className="mt-3 overflow-x-auto text-xs leading-6 text-muted-foreground">
-                      {JSON.stringify({ ...planRequest, siteId: planRequest.siteId.trim() || siteId, stationIds: planRequest.stationIds }, null, 2)}
+                      {JSON.stringify(
+                        {
+                          ...planRequest,
+                          siteId: planRequest.siteId.trim() || siteId,
+                          stationIds: planRequest.stationIds,
+                        },
+                        null,
+                        2,
+                      )}
                     </pre>
                   ) : null}
                 </div>
 
                 {planResponsePayload?.results?.length ? (
                   <div className="mt-4 rounded-xl border border-border/60 bg-card/70 p-4">
-                    <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">Apply results</p>
+                    <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
+                      Apply results
+                    </p>
                     <div className="mt-3 space-y-3">
                       {planResponsePayload.results.map((result) => (
                         <div

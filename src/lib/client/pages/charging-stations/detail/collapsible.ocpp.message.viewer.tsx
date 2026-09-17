@@ -27,13 +27,23 @@ export const OCPPMessageDetailSheet: React.FC<{
   onOpenChange: (open: boolean) => void;
 }> = ({ ocppMessageDto, open, onOpenChange }) => {
   if (!ocppMessageDto) return null;
-  const { message: ocppMessage, correlationId, timestamp, action, origin } = ocppMessageDto;
+  const {
+    message: ocppMessage,
+    correlationId,
+    timestamp,
+    action,
+    origin,
+  } = ocppMessageDto;
   let payload;
   switch (ocppMessage[0]) {
-    case MessageTypeId.Call: payload = ocppMessage[3]; break;
-    case MessageTypeId.CallResult: payload = ocppMessage[2]; break;
+    case MessageTypeId.Call:
+      payload = ocppMessage[3];
+      break;
+    case MessageTypeId.CallResult:
+      payload = ocppMessage[2];
+      break;
     case MessageTypeId.CallError: {
-      const [,, errorCode, errorDescription, errorDetails] = ocppMessage;
+      const [, , errorCode, errorDescription, errorDetails] = ocppMessage;
       payload = { errorCode, errorDescription, errorDetails };
       break;
     }
@@ -54,26 +64,61 @@ export const OCPPMessageDetailSheet: React.FC<{
               <SheetTitle className="text-lg font-bold">
                 <div className="flex items-center gap-1">
                   {correlationId}
-                  <Button variant="ghost" size="xs" onClick={async (e) => { e.stopPropagation(); await copy(correlationId); }}>
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      await copy(correlationId);
+                    }}
+                  >
                     <Copy className={buttonIconSize} />
                   </Button>
                 </div>
               </SheetTitle>
               <SheetDescription className="text-base">
-                <span className="font-semibold">{action} - {origin}</span>{' '}
+                <span className="font-semibold">
+                  {action} - {origin}
+                </span>{' '}
                 @ {formatDate(timestamp, 'yyyy-MM-dd HH:mm:ss.SSS')}
               </SheetDescription>
             </SheetHeader>
           )}
-          <Button variant="ghost" size="xs" className="mt-1 shrink-0" onClick={() => onOpenChange(false)}>
+          <Button
+            variant="ghost"
+            size="xs"
+            className="mt-1 shrink-0"
+            onClick={() => onOpenChange(false)}
+          >
             <X className={buttonIconSize} />
           </Button>
         </div>
         <ScrollArea className="px-4 size-full relative">
-          <SyntaxHighlighter language="json" style={okaidia} codeTagProps={{ style: { whiteSpace: 'pre-wrap', wordBreak: 'break-all' } }} customStyle={{ fontSize: '0.8rem', padding: '0.5rem', borderRadius: '4px', maxWidth: '100%' }} wrapLongLines>
+          <SyntaxHighlighter
+            language="json"
+            style={okaidia}
+            codeTagProps={{
+              style: { whiteSpace: 'pre-wrap', wordBreak: 'break-all' },
+            }}
+            customStyle={{
+              fontSize: '0.8rem',
+              padding: '0.5rem',
+              borderRadius: '4px',
+              maxWidth: '100%',
+            }}
+            wrapLongLines
+          >
             {formattedJson}
           </SyntaxHighlighter>
-          <Button variant="secondary" size="xs" onClick={async (e) => { e.stopPropagation(); await copy(JSON.stringify(ocppMessage, null, 2), false); }} className="absolute top-4 right-6 p-1">
+          <Button
+            variant="secondary"
+            size="xs"
+            onClick={async (e) => {
+              e.stopPropagation();
+              await copy(JSON.stringify(ocppMessage, null, 2), false);
+            }}
+            className="absolute top-4 right-6 p-1"
+          >
             <Copy className={buttonIconSize} />
           </Button>
         </ScrollArea>
@@ -122,8 +167,16 @@ export const CollapsibleOCPPMessageViewer: React.FC<{
       <SyntaxHighlighter
         language="json"
         style={okaidia}
-        codeTagProps={{ style: { whiteSpace: 'pre-wrap', wordBreak: 'break-all' } }}
-        customStyle={{ fontSize: '0.8rem', padding: '0.5rem', borderRadius: '4px', maxHeight: '250px', margin: 0 }}
+        codeTagProps={{
+          style: { whiteSpace: 'pre-wrap', wordBreak: 'break-all' },
+        }}
+        customStyle={{
+          fontSize: '0.8rem',
+          padding: '0.5rem',
+          borderRadius: '4px',
+          maxHeight: '250px',
+          margin: 0,
+        }}
         wrapLongLines
       >
         {isExpandable ? lines.slice(0, threshold).join('\n') : formattedJson}
@@ -133,7 +186,10 @@ export const CollapsibleOCPPMessageViewer: React.FC<{
         type="button"
         variant="secondary"
         size="xs"
-        onClick={async (e) => { e.stopPropagation(); await copy(JSON.stringify(ocppMessage, null, 2), false); }}
+        onClick={async (e) => {
+          e.stopPropagation();
+          await copy(JSON.stringify(ocppMessage, null, 2), false);
+        }}
         className={`absolute top-1 ${isExpandable ? 'right-8' : 'right-1'} p-1`}
       >
         <Copy className={buttonIconSize} />
@@ -144,7 +200,10 @@ export const CollapsibleOCPPMessageViewer: React.FC<{
           type="button"
           size="xs"
           className="absolute top-1 right-1 p-1"
-          onClick={(e) => { e.stopPropagation(); onExpand(ocppMessageDto); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            onExpand(ocppMessageDto);
+          }}
         >
           <Plus className={buttonIconSize} />
         </Button>

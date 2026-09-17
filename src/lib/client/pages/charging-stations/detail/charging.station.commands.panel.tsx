@@ -66,10 +66,16 @@ export const ChargingStationCommandsPanel = ({
             onClickAction={showForceDisconnectModal}
           />
           {!hasActiveTransactions && (
-            <StartTransactionButton station={station} disabled={!station.isOnline} />
+            <StartTransactionButton
+              station={station}
+              disabled={!station.isOnline}
+            />
           )}
           {hasActiveTransactions && (
-            <StopTransactionButton station={station} disabled={!station.isOnline} />
+            <StopTransactionButton
+              station={station}
+              disabled={!station.isOnline}
+            />
           )}
           <ResetButton station={station} disabled={!station.isOnline} />
           <Button onClick={showOtherCommandsModal} disabled={!station.isOnline}>

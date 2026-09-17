@@ -177,7 +177,12 @@ export const ChargingStationActiveProfilesTab = ({
           <Button
             variant="outline"
             size="sm"
-            disabled={isLoading || isClearingAll || isRefreshing || clearableRows.length === 0}
+            disabled={
+              isLoading ||
+              isClearingAll ||
+              isRefreshing ||
+              clearableRows.length === 0
+            }
             onClick={() => void clearAllProfiles()}
           >
             {isClearingAll ? 'Clearing...' : 'Clear all active'}
@@ -204,13 +209,19 @@ export const ChargingStationActiveProfilesTab = ({
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={10} className="text-sm text-muted-foreground">
+                <TableCell
+                  colSpan={10}
+                  className="text-sm text-muted-foreground"
+                >
                   Loading active charging profiles...
                 </TableCell>
               </TableRow>
             ) : rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={10} className="text-sm text-muted-foreground">
+                <TableCell
+                  colSpan={10}
+                  className="text-sm text-muted-foreground"
+                >
                   No active charging profiles found.
                 </TableCell>
               </TableRow>
@@ -254,7 +265,9 @@ export const ChargingStationActiveProfilesTab = ({
                         variant="ghost"
                         size="sm"
                         disabled={!canClear || isClearingRow || isClearingAll}
-                        onClick={() => canClear && void clearProfileById(rowProfileId)}
+                        onClick={() =>
+                          canClear && void clearProfileById(rowProfileId)
+                        }
                       >
                         {isClearingRow ? 'Clearing...' : 'Clear'}
                       </Button>
