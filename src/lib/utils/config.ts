@@ -44,6 +44,7 @@ const getConfig: () => {
   gcpCloudStorageCoreBucketName?: string;
   helpVideoUrl?: string;
   allowImageUpload: boolean;
+  emsEnabled: boolean;
 } = () => {
   const authProviderResult = AuthProviderTypeEnum.safeParse(
     process.env.NEXT_PUBLIC_AUTH_PROVIDER,
@@ -107,6 +108,7 @@ const getConfig: () => {
     helpVideoUrl:
       process.env.NEXT_PUBLIC_HELP_VIDEO_URL || '/videos/help-video.mp4', // Default local path; override with env var for external URLs
     allowImageUpload: process.env.ALLOW_IMAGE_UPLOAD === 'true',
+    emsEnabled: process.env.NEXT_PUBLIC_EMS_ENABLED === 'true',
   };
 };
 

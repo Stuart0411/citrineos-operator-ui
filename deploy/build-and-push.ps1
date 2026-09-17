@@ -104,6 +104,11 @@ foreach ($name in $requiredBuildArgs) {
   $buildArgList += @('--build-arg', "$name=$value")
 }
 
+$emsEnabled = [Environment]::GetEnvironmentVariable('NEXT_PUBLIC_EMS_ENABLED')
+if (-not [string]::IsNullOrWhiteSpace($emsEnabled)) {
+  $buildArgList += @('--build-arg', "NEXT_PUBLIC_EMS_ENABLED=$emsEnabled")
+}
+
 $fullImage = "$Image`:$Tag"
 Write-Host "Building and pushing $fullImage" -ForegroundColor Cyan
 

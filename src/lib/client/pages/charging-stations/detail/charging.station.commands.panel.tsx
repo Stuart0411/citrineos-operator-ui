@@ -62,7 +62,7 @@ export const ChargingStationCommandsPanel = ({
         {!station.isOnline && <CommandsUnavailableText />}
         <div className="flex gap-4 flex-wrap">
           <ForceDisconnectButton
-            id={(station as any).pkId}
+            id={Number(station.id)}
             onClickAction={showForceDisconnectModal}
           />
           {!hasActiveTransactions && (

@@ -228,6 +228,10 @@ export const EmsOperationsCard = ({
   showOverview = true,
   showBuilder = true,
 }: EmsOperationsCardProps) => {
+  if (!config.emsEnabled) {
+    return null;
+  }
+
   const {
     query: { data: stationsData },
   } = useList<EmsStationOption>({
