@@ -187,7 +187,7 @@ export const ChargingStationDetailTabsCard = ({
                   sorters: DEFAULT_SORTERS,
                   meta: {
                     gqlQuery: GET_TRANSACTION_LIST_FOR_STATION,
-                    gqlVariables: { stationId },
+                    gqlVariables: { stationId: Number(stationId) },
                   },
                   queryOptions: {
                     ...getPlainToInstanceOptions(TransactionClass),
