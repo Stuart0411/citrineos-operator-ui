@@ -51,7 +51,7 @@ import { getPageSizePreference } from '@lib/utils/store/table.preferences.slice'
 
 export interface OCPPMessagesProps {
   id: number;
-  stationId?: string;
+  stationId?: number;
   initialStartDate?: Date | null;
   initialEndDate?: Date | null;
 }
@@ -117,7 +117,7 @@ export const OCPPMessages: React.FC<OCPPMessagesProps> = ({
     ],
     meta: {
       gqlQuery: GET_OCPP_MESSAGES_LIST_FOR_STATION,
-      gqlVariables: { stationId: stationId ?? String(id) },
+      gqlVariables: { stationId: stationId ?? id },
     },
     filters,
     queryOptions: getPlainToInstanceOptions(OCPPMessageClass),
@@ -251,7 +251,7 @@ export const OCPPMessages: React.FC<OCPPMessagesProps> = ({
             },
             meta: {
               gqlQuery: GET_OCPP_MESSAGES_LIST_FOR_STATION,
-              gqlVariables: { stationId: stationId ?? String(id) },
+              gqlVariables: { stationId: stationId ?? id },
             },
             queryOptions: getPlainToInstanceOptions(OCPPMessageClass),
           }}
