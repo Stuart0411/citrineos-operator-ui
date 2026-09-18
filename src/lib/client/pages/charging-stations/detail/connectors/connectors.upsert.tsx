@@ -58,6 +58,15 @@ const formats = Object.keys(ConnectorFormatEnum);
 
 const powerTypes = Object.keys(ConnectorPowerTypeEnum);
 
+const INTEGER_FIELDS = [
+  ConnectorProps.connectorId,
+  ConnectorProps.evseTypeConnectorId,
+  ConnectorProps.maximumAmperage,
+  ConnectorProps.maximumVoltage,
+  ConnectorProps.maximumPowerWatts,
+  'tariffId',
+] as const;
+
 export const ConnectorsUpsert: React.FC<ConnectorUpsertProps> = ({
   onSubmit,
   connector,
@@ -136,6 +145,18 @@ export const ConnectorsUpsert: React.FC<ConnectorUpsertProps> = ({
     const now = new Date().toISOString();
 
     const newItem: any = getSerializedValues({ ...data }, ConnectorClass);
+    for (const field of INTEGER_FIELDS) {
+      if (newItem[field] === '' || newItem[field] == null) {
+        newItem[field] = undefined;
+        continue;
+      }
+
+      const value = Number(newItem[field]);
+      if (!Number.isInteger(value)) {
+        throw new Error(`${field} must be a whole number.`);
+      }
+      newItem[field] = value;
+    }
 
     if (evseId) {
       newItem.evseId = evseId;
@@ -166,7 +187,7 @@ export const ConnectorsUpsert: React.FC<ConnectorUpsertProps> = ({
             label="Connector ID"
             description="The serial integers starting at 1 used in OCPP 1.6 to refer to the connector, unique per Charging Station."
           >
-            <Input />
+            <Input type="number" min="0" step="1" />
           </FormField>
 
           <FormField
@@ -175,7 +196,7 @@ export const ConnectorsUpsert: React.FC<ConnectorUpsertProps> = ({
             label="EVSE Type Connector ID"
             description="The serial integers starting at 1 used in OCPP 2.0.1 to refer to the connector, unique per EVSE."
           >
-            <Input />
+            <Input type="number" min="0" step="1" />
           </FormField>
 
           <Controller
@@ -276,7 +297,7 @@ export const ConnectorsUpsert: React.FC<ConnectorUpsertProps> = ({
             name={ConnectorProps.maximumAmperage}
             label="Maximum Amperage"
           >
-            <Input type="number" />
+            <Input type="number" min="0" step="1" />
           </FormField>
 
           <FormField
@@ -284,7 +305,7 @@ export const ConnectorsUpsert: React.FC<ConnectorUpsertProps> = ({
             name={ConnectorProps.maximumVoltage}
             label="Maximum Voltage"
           >
-            <Input type="number" />
+            <Input type="number" min="0" step="1" />
           </FormField>
 
           <FormField
@@ -292,7 +313,7 @@ export const ConnectorsUpsert: React.FC<ConnectorUpsertProps> = ({
             name={ConnectorProps.maximumPowerWatts}
             label="Maximum Power Watts"
           >
-            <Input type="number" />
+            <Input type="number" min="0" step="1" />
           </FormField>
 
           <FormField
