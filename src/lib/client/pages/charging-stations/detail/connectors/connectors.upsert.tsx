@@ -173,6 +173,9 @@ export const ConnectorsUpsert: React.FC<ConnectorUpsertProps> = ({
     newItem.ocppConnectionName =
       (connector as any)?.ocppConnectionName ??
       selectedChargingStation?.ocppConnectionName;
+    if (!newItem.ocppConnectionName) {
+      throw new Error('The charging station connection name is unavailable. Reload the station and try again.');
+    }
 
     form.refineCore.onFinish(newItem).then(() => reset());
   };

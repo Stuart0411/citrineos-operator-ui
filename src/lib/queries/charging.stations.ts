@@ -196,6 +196,7 @@ export const CHARGING_STATIONS_GET_QUERY = gql`
   query GetChargingStationById($id: Int!) {
     ChargingStations_by_pk(id: $id) {
       id
+      ocppConnectionName
       tenantId
       isOnline
       protocol
