@@ -32,7 +32,7 @@ export const EVSE_LIST_QUERY = gql`
 
 export const GET_EVSE_LIST_FOR_STATION = gql`
   query GetPaginatedEvseListForStation(
-    $stationId: String!
+    $stationId: Int!
     $where: Evses_bool_exp = {}
     $order_by: [Evses_order_by!] = {}
     $offset: Int
@@ -75,7 +75,7 @@ export const GET_EVSE_LIST_FOR_STATION = gql`
 `;
 
 export const GET_EVSES_FOR_STATION = gql`
-  query GetEvseListForStation($stationId: String!) {
+  query GetEvseListForStation($stationId: Int!) {
     Evses(where: { stationId: { _eq: $stationId } }) {
       id
       evseTypeId
