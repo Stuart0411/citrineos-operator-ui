@@ -20,6 +20,7 @@ import { OnlineStatusCard } from '@lib/client/pages/overview/online-status/onlin
 import { PluginSuccessRateCard } from '@lib/client/pages/overview/plugin-success-rate/plugin.success.rate.card';
 import { Activity, ArrowUpRight, Bolt, Layers3 } from 'lucide-react';
 import Link from 'next/link';
+import config from '@lib/utils/config';
 
 export const Overview = () => {
   return (
@@ -108,9 +109,11 @@ export const Overview = () => {
         <PluginSuccessRateCard />
       </div>
       <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-12">
-        <div className="w-full xl:col-span-4">
-          <EmsOperationsCard showBuilder={false} />
-        </div>
+        {config.emsEnabled && (
+          <div className="w-full xl:col-span-4">
+            <EmsOperationsCard showBuilder={false} />
+          </div>
+        )}
         <div className="w-full xl:col-span-4">
           <LocationsCard />
         </div>

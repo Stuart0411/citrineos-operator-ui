@@ -5,6 +5,7 @@
 
 import { Logo } from '@lib/client/components/title';
 import { cn } from '@lib/utils/cn';
+import config from '@lib/utils/config';
 import {
   ArrowLeftRight,
   ChevronLeft,
@@ -70,11 +71,15 @@ export const MainMenu = ({ activeSection }: MainMenuProps) => {
       label: translate('menu.overview'),
       icon: <Home className={sidebarIconSize} />,
     },
-    {
-      key: `/${MenuSection.EMS_PLAN_BUILDER}`,
-      label: 'EMS plan builder',
-      icon: <SlidersHorizontal className={sidebarIconSize} />,
-    },
+    ...(config.emsEnabled
+      ? [
+          {
+            key: `/${MenuSection.EMS_PLAN_BUILDER}`,
+            label: 'EMS plan builder',
+            icon: <SlidersHorizontal className={sidebarIconSize} />,
+          },
+        ]
+      : []),
     {
       key: `/${MenuSection.LOCATIONS}`,
       label: translate('Locations.Locations'),
