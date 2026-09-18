@@ -6,7 +6,7 @@ import { gql } from 'graphql-tag';
 
 export const GET_ACTIVE_CHARGING_PROFILES_FOR_STATION = gql`
   query GetActiveChargingProfilesForStation(
-    $stationId: String!
+    $stationId: Int!
     $where: [ChargingProfiles_bool_exp!] = []
     $order_by: [ChargingProfiles_order_by!] = {}
     $offset: Int
@@ -14,7 +14,7 @@ export const GET_ACTIVE_CHARGING_PROFILES_FOR_STATION = gql`
   ) {
     ChargingProfiles(
       where: {
-        stationId: { _eq: $stationId }
+        Transaction: { stationId: { _eq: $stationId } }
         isActive: { _eq: true }
         _and: $where
       }
@@ -24,7 +24,6 @@ export const GET_ACTIVE_CHARGING_PROFILES_FOR_STATION = gql`
     ) {
       databaseId
       id
-      stationId
       evseId
       stackLevel
       chargingProfilePurpose
@@ -38,7 +37,7 @@ export const GET_ACTIVE_CHARGING_PROFILES_FOR_STATION = gql`
     }
     ChargingProfiles_aggregate(
       where: {
-        stationId: { _eq: $stationId }
+        Transaction: { stationId: { _eq: $stationId } }
         isActive: { _eq: true }
         _and: $where
       }

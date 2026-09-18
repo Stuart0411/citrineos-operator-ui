@@ -223,7 +223,7 @@ export const ChargingStationDetailTabsCard = ({
             className={cardTabsStyle}
           >
             <ChargingStationActiveProfilesTab
-              stationId={stationId}
+              stationId={stationId ? Number(stationId) : undefined}
               protocol={protocol}
             />
           </TabsContent>

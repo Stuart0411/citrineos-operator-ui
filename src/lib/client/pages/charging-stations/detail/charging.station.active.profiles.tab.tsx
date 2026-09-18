@@ -29,7 +29,6 @@ import { useMemo, useState } from 'react';
 type ChargingProfileRow = {
   databaseId: number;
   id: number;
-  stationId: string;
   evseId?: number | null;
   stackLevel: number;
   chargingProfilePurpose: string;
@@ -51,7 +50,7 @@ export const ChargingStationActiveProfilesTab = ({
   stationId,
   protocol,
 }: {
-  stationId?: string;
+  stationId?: number;
   protocol?: OCPPVersion | null;
 }) => {
   const tenantId = useTenantId();
@@ -66,7 +65,7 @@ export const ChargingStationActiveProfilesTab = ({
     meta: {
       gqlQuery: GET_ACTIVE_CHARGING_PROFILES_FOR_STATION,
       gqlVariables: {
-        stationId,
+        stationId: stationId ? Number(stationId) : undefined,
       },
     },
     sorters: [{ field: 'updatedAt', order: 'desc' }],
