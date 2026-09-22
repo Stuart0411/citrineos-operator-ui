@@ -117,6 +117,12 @@ Ensure-GhcrLogin -RegistryImage $Image
 $cmd = @(
   'buildx', 'build',
   '--platform', 'linux/amd64',
+  # Buildx attaches a provenance/SBOM attestation as an extra 'unknown/unknown'
+  # manifest entry by default. Some pull/run tooling mis-resolves to that entry
+  # instead of the real image, producing "exec format error". Disable both so
+  # the pushed index contains only the real platform manifest.
+  '--provenance=false',
+  '--sbom=false',
   '--file', 'Dockerfile',
   '--tag', $fullImage,
   '--push'
