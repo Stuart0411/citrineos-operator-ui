@@ -114,6 +114,15 @@ Write-Host "Building and pushing $fullImage" -ForegroundColor Cyan
 
 Ensure-GhcrLogin -RegistryImage $Image
 
+# Resolve relative to the repo root (one level above this script), not the
+# caller's current directory, so this works whether invoked from repo root
+# or from inside deploy/.
+$repoRoot = Split-Path -Parent $scriptDir
+$dockerfilePath = Join-Path $repoRoot 'Dockerfile'
+if (-not (Test-Path $dockerfilePath)) {
+  throw "Dockerfile not found at $dockerfilePath"
+}
+
 $cmd = @(
   'buildx', 'build',
   '--platform', 'linux/amd64',
@@ -123,10 +132,10 @@ $cmd = @(
   # the pushed index contains only the real platform manifest.
   '--provenance=false',
   '--sbom=false',
-  '--file', 'Dockerfile',
+  '--file', $dockerfilePath,
   '--tag', $fullImage,
   '--push'
-) + $buildArgList + @('.')
+) + $buildArgList + @($repoRoot)
 
 & docker @cmd
 if ($LASTEXITCODE -ne 0) {
