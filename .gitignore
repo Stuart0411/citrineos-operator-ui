@@ -38,3 +38,6 @@ next-env.d.ts
 
 # local env files
 .env.local
+
+# deployment runtime secrets (copy from *.example and fill in locally)
+deploy/ui.runtime.env
