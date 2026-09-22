@@ -126,8 +126,9 @@ export const getChargingStationStatusCounts = (
       const latestStatusNotificationForEvse =
         chargingStation?.statusNotifications?.find(
           (latestStatusNotification) =>
-            latestStatusNotification?.evseId === evse.id &&
-            latestStatusNotification?.connectorId === evse.connectors?.[0]?.id,
+            latestStatusNotification?.evseId === evse.evseTypeId &&
+            latestStatusNotification?.connectorId ===
+              evse.connectors?.[0]?.connectorId,
         );
       if (latestStatusNotificationForEvse) {
         const connectorStatus: ConnectorStatusEnumType =
