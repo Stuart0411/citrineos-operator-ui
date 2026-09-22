@@ -14,6 +14,11 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
+# Self-identifies the running script version so a stale local copy (e.g. not yet
+# git-pulled) is immediately obvious in the output rather than misdiagnosed as a
+# new bug.
+Write-Host "build-and-push.ps1 script-version: repo-root-relative-paths-1" -ForegroundColor DarkGray
+
 function Import-EnvFile {
   param([string]$Path)
 
@@ -119,6 +124,8 @@ Ensure-GhcrLogin -RegistryImage $Image
 # or from inside deploy/.
 $repoRoot = Split-Path -Parent $scriptDir
 $dockerfilePath = Join-Path $repoRoot 'Dockerfile'
+Write-Host "Repo root:  $repoRoot" -ForegroundColor DarkGray
+Write-Host "Dockerfile: $dockerfilePath" -ForegroundColor DarkGray
 if (-not (Test-Path $dockerfilePath)) {
   throw "Dockerfile not found at $dockerfilePath"
 }
