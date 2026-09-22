@@ -62,4 +62,6 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
+# Do not inherit node:alpine's docker-entrypoint.sh; invoke the server directly.
+ENTRYPOINT []
 CMD ["node", "server.js"]
