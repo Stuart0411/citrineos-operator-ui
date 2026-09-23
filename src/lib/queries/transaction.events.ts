@@ -143,20 +143,22 @@ export const GET_TRANSACTION_EVENTS_WITH_METER_VALUES_FOR_STATION = gql`
 
 export const GET_TRANSACTION_EVENTS_WITH_METER_VALUES_BY_STATION_ID = gql`
   query GetTransactionEventsWithMeterValuesByStationId(
-    $stationId: String!
+    $stationId: Int!
     $where: TransactionEvents_bool_exp! = {}
     $order_by: [TransactionEvents_order_by!] = { timestamp: asc }
     $offset: Int
     $limit: Int
   ) {
     TransactionEvents(
-      where: { stationId: { _eq: $stationId }, _and: [$where] }
+      where: {
+        Transaction: { stationId: { _eq: $stationId } }
+        _and: [$where]
+      }
       order_by: $order_by
       offset: $offset
       limit: $limit
     ) {
       id
-      stationId
       transactionDatabaseId
       timestamp
       MeterValues(order_by: { timestamp: asc }) {
@@ -168,7 +170,10 @@ export const GET_TRANSACTION_EVENTS_WITH_METER_VALUES_BY_STATION_ID = gql`
       }
     }
     TransactionEvents_aggregate(
-      where: { stationId: { _eq: $stationId }, _and: [$where] }
+      where: {
+        Transaction: { stationId: { _eq: $stationId } }
+        _and: [$where]
+      }
     ) {
       aggregate {
         count
